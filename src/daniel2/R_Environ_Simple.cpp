@@ -37,6 +37,8 @@ void finalizer_Env(SEXP ext){
     delete ptr;
     R_ClearExternalPtr(ext);
 }
+
+
 SEXP R_Set_Seed(SEXP p, SEXP seed){
 	CModel_Environ_Simple_base* m = get_env(p);
 	unsigned int sd = *INTEGER(seed);
@@ -224,7 +226,7 @@ SEXP R_Set_Param(SEXP p, SEXP param_name, SEXP r_data){
 	//Copy provided data r_data to parameter "param_name". Verifies
 	// data type and dimensions.
 	CModel_Environ_Simple_base* m = get_env(p);
-	SEXP ret_int_dims = R_NilValue; //int. Dimensions of the array
+	//SEXP ret_int_dims = R_NilValue; //int. Dimensions of the array
 	//Get and verify parameter container.
 	char* key = const_cast<char*>(CHAR(STRING_ELT(param_name,0)));
 	if(!m->check_param_key(key)){
@@ -246,7 +248,8 @@ SEXP R_Set_Param(SEXP p, SEXP param_name, SEXP r_data){
 		break;
 	default:
 		err = "Not implemented data type reader for " + par.get_name();
-		throw std::runtime_error(err);
+		//throw std::runtime_error(err);
+		DAN_ERR_EXIT("%s\n", err.c_str());
 		break;
 	}
 	if (type != par.get_data_type().get_data_type()){
@@ -352,7 +355,7 @@ SEXP R_Change_SubSamp(SEXP p, SEXP subsam){
 SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
 	int J = length(levelsJ);
 	int JN = length(dataIJ_flat);
-	int N = JN / J;
+	//int N = JN / J;
 	int* data_flat = INTEGER(dataIJ_flat);
 	typedef std::map<std::vector<int>, int> tabla;
 	tabla s;

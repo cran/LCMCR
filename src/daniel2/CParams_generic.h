@@ -40,7 +40,7 @@ public:
 	typedef std::map<std::string, CPar_defs*> t_dict_type;
 	typedef CParams_generic::t_dict_type::iterator iterator_dictionary_t;
 	CParams_generic(){}
-	~CParams_generic(){
+	virtual ~CParams_generic(){
 		for (std::map<std::string, CPar_defs*>::iterator it = dict.begin(); it != dict.end(); it++)
 			delete it->second;
 	}

@@ -26,6 +26,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <algorithm> //For std::copy
 
 class CMCMC_Trace {
 	//terms:
@@ -64,7 +65,7 @@ public:
 		//This one is tricky. It sets a new tracer for a parameter that does not come from the par_container object.
 		std::vector<int> ln(dims + 1);
 		ln[0] = len;
-		copy(lengths, lengths + dims, ln.begin() + 1);
+		std::copy(lengths, lengths + dims, ln.begin() + 1);
 		try{
 			Trace_Container.add(key, type, ln);
 		} catch (const std::exception& e){
@@ -86,11 +87,14 @@ public:
 			int size = it->second->get_size_bytes() / len; //size of each sample in bytes
 			const std::string &key = it->first;
 			void *dst = (void *)((char*)it->second->get_data_base() + next_sample * size);
-			void *src;
+			void *src = NULL;
 			if (par_container.check_key(key)){
 				src = par_container[key].get_data_base();
 			} else if(extra_sources.count(key) >0) {
 				src = extra_sources[key];
+			} else {
+				//THIS WOULD BE AN INCONSISTENT STATE. MAYBE WANT TO THROW AN ERROR?
+				continue;
 			}
 
 			std::copy((char*)src, (char*)src + size, (char*)dst);
@@ -103,9 +107,9 @@ public:
 	void Copy_trace(const std::string& key, void *dst){
 		//Careful: Can't use the container copy functions because
 		// we have to only copy (size) elements.
-		int len = this->get_size_bytes(key);
+		int _len = this->get_size_bytes(key);
 		char* src = (char*)Trace_Container[key].get_data_base();
-		std::copy(src, src + len, (char*)dst);
+		std::copy(src, src + _len, (char*)dst);
 	}
 	int get_capacity() {
 		return(len);
@@ -167,10 +171,10 @@ public:
 	//WARNING: model_base HAS TO SET model_base after using register_model . The idea is to pass this
 	// before initializing 
 	typedef enum {OBJECT_CREATED, MODEL_REGISTERED, MODEL_INITIALIZED, UPDATING} object_state_t;
-	CModel_Environ_Simple_base(CData* data_base, CParam *par_base, int len_buffer, int subsamp = 1, bool del_objects = true)
-			:	data_base(data_base), par_base(par_base), model_base(model_base), 
-			thining(subsamp), del_objects(del_objects), iteration(0), count_subsamp(0), tracing(false), updating_output(true),
-			state(OBJECT_CREATED){
+	//<<---- 2016-02-11: removed superfluous intialization of model_base. CHECK FOR SIDE EFECTS.
+	CModel_Environ_Simple_base(CData* _data_base, CParam *_par_base, int len_buffer, int subsamp = 1, bool _del_objects = true)
+			:	updating_output(true), state(OBJECT_CREATED), data_base(_data_base), par_base(_par_base),//, model_base(model_base), 
+			tracing(false), thining(subsamp), del_objects(_del_objects), iteration(0), count_subsamp(0){
 		try{
 			trace = new CMCMC_Trace(par_base, len_buffer);
 		} catch (const std::exception& e){
@@ -201,14 +205,20 @@ public:
 		this->trace->Clear();
 		state = MODEL_INITIALIZED;
 	}
-	virtual void set_trace(const std::string& par_key){
-		const std::vector<std::string>& lista = get_param_keys();
-		if (count(lista.begin(), lista.end(), par_key) ==0) return;
-		trace->set_trace(par_key);
-	}
 	virtual std::vector<std::string> get_param_keys(){ 
 		return par_base->get_var_list();
 	}
+	virtual void set_trace(const std::string& par_key){
+		const std::vector<std::string>& lista = get_param_keys();
+#ifdef __sun
+		//Solaris has some quirks around the function std::count.
+		if(std::find(lista.begin(), lista.end(), par_key) == lista.end() ) return;
+#else
+		if (std::count(lista.begin(), lista.end(), par_key) == 0) return;
+#endif
+		trace->set_trace(par_key);
+	}
+
 	///****                                              *****///
 	///**** DO NOT OVERRIDE THE FOLLOWING PUBLIC METHODS *****///
 	///****												 *****///
@@ -346,8 +356,7 @@ class CModel_Environ_Simple : public CModel_Environ_Simple_base{
 public:
 	CModel_Environ_Simple(T_Data* data_, T_Param* par_, int len_buffer, int subsamp = 1, 
 		bool del_objects = true) 
-			:	data(data_), par(par_), 
-				CModel_Environ_Simple_base(data_, par_, len_buffer, subsamp, del_objects)
+			:	CModel_Environ_Simple_base(data_, par_, len_buffer, subsamp, del_objects), data(data_), par(par_)
 	{
 		try {
 			model = new T_Model(data_, par_);

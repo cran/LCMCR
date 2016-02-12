@@ -48,16 +48,16 @@ public:
 	double a_alpha, b_alpha; // alpha ~ Gamma[a_alpha, b_alpha]
 
 	//Constructors.
-	CParams_NPLCM_CR_Basic_Freq(int J, int K, int n, int M, double a_alpha, double b_alpha)
-		:	a_alpha(a_alpha), b_alpha(b_alpha), J(J), K(K), n(n), M(M){
+	CParams_NPLCM_CR_Basic_Freq(int _J, int _K, int _n, int _M, double _a_alpha, double _b_alpha)
+		:	J(_J), K(_K), n(_n), M(_M), a_alpha(_a_alpha), b_alpha(_b_alpha) {
 		class_construct();
 	}
-	CParams_NPLCM_CR_Basic_Freq(CData_DM* dat, int K, double a_alpha, double b_alpha)
-		:	a_alpha(a_alpha), b_alpha(b_alpha), J(dat->J), K(K), n(dat->n), M(dat->ncells){
+	CParams_NPLCM_CR_Basic_Freq(CData_DM* _dat, int _K, double _a_alpha, double _b_alpha)
+		:	J(_dat->J), K(_K), n(_dat->n), M(_dat->ncells), a_alpha(_a_alpha), b_alpha(_b_alpha) {
 		class_construct();		
 	}
 	CParams_NPLCM_CR_Basic_Freq(CParams_NPLCM_CR_Basic_Freq& orig)
-		:	a_alpha(orig.a_alpha), b_alpha(orig.b_alpha), J(orig.J), K(orig.K), n(orig.n), M(orig.M){
+		:	J(orig.J), K(orig.K), n(orig.n), M(orig.M), a_alpha(orig.a_alpha), b_alpha(orig.b_alpha){
 		class_construct();
 		//*this = orig; //copy the container. 
 		this->storage = orig.storage;
@@ -75,9 +75,9 @@ public:
 	CNPLCM_CR_Basic_Freq(CData_DM *_data, CParams_NPLCM_CR_Basic_Freq*_par) : CChain(_par), par(_par) , data(_data){
 		class_construct(data, par);
 	}
-	CNPLCM_CR_Basic_Freq(CData_DM* _data, int K, double a_alpha, double b_alpha) 
+	CNPLCM_CR_Basic_Freq(CData_DM* _data, int _K, double _a_alpha, double _b_alpha) 
 			:	CChain(), data(_data){
-		register_param(par = new CParams_NPLCM_CR_Basic_Freq(data->J, K, data->n, data->ncells, a_alpha, b_alpha));
+		register_param(par = new CParams_NPLCM_CR_Basic_Freq(data->J, K, data->n, data->ncells, _a_alpha, _b_alpha));
 		class_construct(data, par);
 	}
 	void Update();

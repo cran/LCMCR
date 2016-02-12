@@ -37,7 +37,7 @@
 //		free(Array);
 
 //Malloc utilities
-void *dan_malloc(int bytes, char* name_var, char* name_function);
+void *dan_malloc(int bytes, char const * name_var, char const * name_function);
 void *dan_malloc(int bytes);
 void dan_free(void* ptr);
 
@@ -172,7 +172,7 @@ template<typename T>
 void dan_aperm(const T* orig_flat, T* dst_flat, const int& dims, const int lengths[], const int order[]){
 	// transpose arbitrary indexes from an array.
 	int x, y;
-	int index, weights[100], multiplier, size = 1;
+	int index, weights[100], size = 1;
 	for (int i = 0; i < dims ; i++){
 		size *= lengths[i];
 	}

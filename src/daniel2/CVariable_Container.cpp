@@ -31,8 +31,8 @@ void CVariable_Container::alloc(const std::vector<int>& lengths){
 	if (lengths.size() < 1 || state == ALLOCATED) return;
 	int size_elem = data_type.get_bytes();
 	this->size_bytes = data_type.get_bytes(); 
-	for (int i = 0; i < lengths.size(); i++) size_bytes *= lengths[i];
-	this->data_base = operator new (size_bytes); //This throws bad_alloc if fails.
+	for (unsigned int i = 0; i < lengths.size(); i++) size_bytes *= lengths[i];
+	this->data_base = ::operator new (size_bytes); //This throws bad_alloc if fails.
 
 	//Exception handling: if the first allocation works, but the second fails, we need to deallocate
 	// the first.
@@ -40,7 +40,7 @@ void CVariable_Container::alloc(const std::vector<int>& lengths){
 		this->data = dan_flat2arrayND_cpp(data_base, size_elem, lengths);
 	} catch (const std::bad_alloc& e){
 		//cleanup: delete main allocation
-		operator delete( data_base );
+		::operator delete( data_base );
 		throw std::bad_alloc(e);
 	}
 
@@ -89,19 +89,21 @@ void CVariable_Container::allocate_space(const std::vector<int>& lengths){
 		err_mess += " already allocated";
 		throw std::runtime_error(err_mess);
 		break;
+	default:
+		break;
 	}
-	if (lengths.size() != this->dims){
+	if (lengths.size() != (unsigned int)this->dims){
 		err_mess += ": dimensions do not match";
 		throw std::runtime_error(err_mess);
 	}
 	//Everything clear. Just allocate.
 	alloc(lengths);
 }
-void CVariable_Container::allocate_space(int dims,...){
-	std::vector<int> lengths(dims);
+void CVariable_Container::allocate_space(int _dims,...){
+	std::vector<int> lengths(_dims);
 	va_list args;
-	va_start(args, dims);
-	for (int i = 0; i < dims; i++) lengths[i] = va_arg(args, int);
+	va_start(args, _dims);
+	for (int i = 0; i < _dims; i++) lengths[i] = va_arg(args, int);
 	va_end(args);
 	allocate_space(lengths);
 }
@@ -121,7 +123,7 @@ void CVariable_Container::register_data(const std::vector<int>& dimensions, void
 	default:
 		break;
 	}
-	if (dimensions.size() != this->dims){
+	if (dimensions.size() != (unsigned int)this->dims){
 		err_mess += ": dimensions do not match";
 		throw std::runtime_error(err_mess);
 	}
@@ -129,7 +131,7 @@ void CVariable_Container::register_data(const std::vector<int>& dimensions, void
 	this->data_base = raw_data;
 	int size_elem = data_type.get_bytes();
 	this->size_bytes = data_type.get_bytes(); 
-	for (int i = 0; i < dimensions.size(); i++) size_bytes *= dimensions[i];
+	for (unsigned int i = 0; i < dimensions.size(); i++) size_bytes *= dimensions[i];
 	this->existing = !cleanup; // <- controls if the object has to clean up after or not.
 	this->size_elems = size_bytes / size_elem;
 	std::copy(dimensions.begin(), dimensions.end(), std::back_inserter( this->dim_lengths ));
@@ -152,7 +154,7 @@ void CVariable_Container::swap_internal2external_scalar(void* existing_scalar){
 	//copy the current value of the internal storage to the external.
  	std::copy((char*)this->data_base, (char*)this->data_base + size_bytes, (char*)existing_scalar);
 	// return the memory to the system.
-	operator delete (data_base); 
+	::operator delete (data_base); 
 	add_existing_scalar(existing_scalar);
 }
 

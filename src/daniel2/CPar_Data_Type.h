@@ -27,8 +27,8 @@
 class CPar_Data_Type {
 public:
 	typedef enum {T_INT, T_DOUBLE, T_BYTE} data_type_t;
-	CPar_Data_Type(data_type_t type) : type(type){
-		switch (type){
+	CPar_Data_Type(data_type_t _type) : type(_type){
+		switch (_type){
 		case T_INT:
 			name = "int";
 			n_bytes = sizeof(int);

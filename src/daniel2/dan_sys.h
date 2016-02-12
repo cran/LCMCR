@@ -21,21 +21,28 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
-#define restrict __restrict //Will work wigh gcc, g++, and VC++. Check this to make it compatible with more compilers
 #include <stdarg.h> //for ellipsis arguments
-
 #ifdef _WIN32
 #include <direct.h>
 #define mkdir(x,y) _mkdir(x)
 #else
 #include <sys/stat.h>
 #endif
-
-//Console output functions. With versions for R.
 #ifdef USING_R
 #include <R.h>
 #include <Rinternals.h>
+#endif
+
+#ifndef __sun
+#define restrict __restrict //Will work wigh gcc, g++, and VC++. Check this to make it compatible with more compilers
+#else
+#define restrict 
+#endif
+
+
+
+//Console output functions. With versions for R.
+#ifdef USING_R
 #define DAN_ERR_EXIT Rf_error
 #define DAN_ERR_NOABORT Rf_warning
 #define DAN_PRINTF Rprintf

@@ -16,16 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <math.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h> //special functions (for gamma)
-#include <string.h>
-#include <math.h>
 #include "daniel2/dan_math_gsl.h"
 #include "definitions.h"
 #include "CData_DM.h"
 #include "NPLCM_CR_Basic_Freq.h"
-#include <vector>
-#include <algorithm>
+
 /*------------------------------------------------------------
 Implementation of class CParams_NPLCM_CR 
 ------------------------------------------------------------*/
@@ -168,7 +169,14 @@ void CNPLCM_CR_Basic_Freq::CountKs(){
 			par->countK[k] += par->count_zIK[m][k];
 		}
 	}
+#ifdef __sun
+	par->k_star = 0;
+	for (int c = 0; c < par->K; c++){
+		par->k_star += par->countK[c] > 0 ? 1 : 0;
+	}
+#else
 	par->k_star = par->K - std::count(par->countK, par->countK + par->K, 0);
+#endif
 }
 
 

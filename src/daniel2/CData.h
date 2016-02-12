@@ -51,7 +51,9 @@ class CData {
 
 public:
 	CData(){}; //Default constructor. Nothing to do here.
-	//virtual ~CData(); No destructor needed because all allocations are placed into the member object "data_container"
+	
+	//<---TODO: [ ] 2016-02-09: Check the effect of introducing this destructor.
+	virtual ~CData(){}; //No destructor needed because all allocations are placed into the member object "data_container"
 	CVariable_Container& operator[] (const std::string& key){
 		if ( !data_container.check_key(key) ){
 			throw std::runtime_error(key + " is not a registered variable in CData object");
@@ -116,7 +118,8 @@ public:
 			throw std::runtime_error("Cannot substitute. Variable still not allocated");
 		}
 		data_container.erase_variable(key);
-		data_container.add(new_var);
+		return(data_container.add(new_var));
+
 	}
 protected:
 	void* _get_pointer(const std::string& key){

@@ -28,9 +28,9 @@ public:
 		Declare();
 		ncells = 0;
 	}
-	void Set_Manually(int *x_flat, int J, int n, int *levels){
-		_Load_Variable("x", x_flat, n, J);
-		_Load_Variable("levelsJ", levels, J);
+	void Set_Manually(int *x_flat, int _J, int _n, int *_levels){
+		_Load_Variable("x", x_flat, _n, _J);
+		_Load_Variable("levelsJ", _levels, _J);
 	}
 	//data storage. These should be private, but this is going to be more efficient.
 	int ** x; //responses vector

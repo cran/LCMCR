@@ -26,8 +26,8 @@
 void CChain::class_construct(){
 	this->verbose = true;
 	this->r = gsl_rng_alloc(gsl_rng_taus2);
-	int off = sizeof(time_t) / 2;
-	int t = ( int(time(0)) << off) >> off;
+	time_t ot = time(0);
+	unsigned int t = (unsigned int)(ot & ~(0u)); //get the lower significant bytes that fit into int.
 	gsl_rng_set(r,t);
 	current_iteration = 0;
 	this->start_time = clock(); //just to set to something. Modify it with "reseed_rng"

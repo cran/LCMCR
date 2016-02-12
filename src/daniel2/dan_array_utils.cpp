@@ -26,7 +26,7 @@
 
 
 //Malloc utility functions-----------------------
-void *dan_malloc(int bytes, char* name_var, char* name_function){
+void *dan_malloc(int bytes, char const * name_var, char const* name_function){
 	void *ret;
 	if ((ret = malloc(bytes)) == NULL){
 		//DAN_ERR_EXIT("Error allocating %s from function %s\n", name_var, name_function);
@@ -71,13 +71,13 @@ void *dan_flat2arrayND_ln(void* data, int size_elem, int dims, int *lengths){
 		//fill each element of the current level of indexes with the addresses
 		for (j = 0; j < size[i]; j++){
 			// of every lengths[i+1] elements of the next level.
-			(*( (void**)current + j)) = next + lengths[i+1]*j*sizeof(void*);
+			(*( (void**)current + j)) = next + lengths[i + 1] * j * sizeof(void*);
 		}
 		current = next;
 	}
 	//fill the last level (pointers to the real data!)
 	for (j = 0; j < size[dims -2]; j++){
-		*( (void**)current + j) = (char*)data + lengths[dims -1]*j*size_elem;
+		*( (void**)current + j) = (char*)data + lengths[dims -1] * j * size_elem;
 	}
 	return (void*)indexes;
 }
@@ -105,7 +105,8 @@ void dan_free_arrayND_overhead(void* arreglo){
 void *dan_flat2arrayND_cpp(void* data, int size_elem, const std::vector<int>& lengths){
 	int dims = lengths.size();
 	std::vector<int> size(dims);
-	unsigned char *indexes, *current, *next;
+	//void* indexes;
+	unsigned char *current, *next;
 	int i, j, aux;
 	
 	if (dims == 1) return data;
@@ -117,16 +118,17 @@ void *dan_flat2arrayND_cpp(void* data, int size_elem, const std::vector<int>& le
 		aux += size[i];
 	}
 	//allocate memory for the array of indexes. The last level (data) is already allocated!!
-	indexes = (unsigned char*) operator new (sizeof(void*)*aux); //throw bad_alloc if failed.
-	current = indexes; //current level to fill (leftmost index)
+	//indexes = (unsigned char*) ::operator new (sizeof(void*) * aux); //throw bad_alloc if failed.
+	void* indexes =  ::operator new (sizeof(void*) * aux); //throw bad_alloc if failed.
+	current = (unsigned char*) indexes; //current level to fill (leftmost index)
 	
 	//fill all levels except the one pointing directly to the data
-	for (i = 0; i < dims -2; i++){
-		next = current + size[i]*sizeof(void*); //next points to the next level of indexes
+	for (i = 0; i < dims - 2; i++){
+		next = current + size[i] * sizeof(void*); //next points to the next level of indexes
 		//fill each element of the current level of indexes with the addresses
 		for (j = 0; j < size[i]; j++){
 			// of every lengths[i+1] elements of the next level.
-			(*( (void**)current + j)) = next + lengths[i+1]*j*sizeof(void*);
+			(*( (void**)current + j)) = next + lengths[i + 1] * j * sizeof(void*);
 		}
 		current = next;
 	}
@@ -134,7 +136,8 @@ void *dan_flat2arrayND_cpp(void* data, int size_elem, const std::vector<int>& le
 	for (j = 0; j < size[dims -2]; j++){
 		*( (void**)current + j) = (unsigned char*)data + lengths[dims -1]*j*size_elem;
 	}
-	return (void*)indexes;
+	//return (void*)indexes;
+	return indexes;
 }
 
 void *dan_flat2arrayND_cpp(void* data, int size_elem, int dims, ...){

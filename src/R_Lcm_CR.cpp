@@ -35,8 +35,8 @@ typedef CParams_NPLCM_CR_Basic_Freq PB;
 class LNPLCM_CR_Basic_env : public CModel_Environ_Simple<DB, MB, PB>{
 public:
 	typedef CModel_Environ_Simple<DB, MB, PB> mit_t;
-	LNPLCM_CR_Basic_env(DB* data, PB* par, int len_buffer, int subsamp=1, bool del_objects=true) 
-			:	mit_t(data, par, len_buffer, subsamp, del_objects){
+	LNPLCM_CR_Basic_env(DB* _data, PB* _par, int _len_buffer, int _subsamp=1, bool _del_objects=true) 
+			:	mit_t(_data, _par, _len_buffer, _subsamp, _del_objects){
 	}
 	~LNPLCM_CR_Basic_env(){
 	}
@@ -45,7 +45,6 @@ protected:
 	}
 	void Other_Updating_Options(){
 		R_CheckUserInterrupt();
-		//DAN_PRINTF("\riteration = %d       ", this->iteration + 1);
 	}
 };
 

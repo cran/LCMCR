@@ -40,9 +40,9 @@ public:
 
 	// constructors:
 	//1) with external storage
-	CVariable_Container(CPar_Data_Type::data_type_t type, void* existing, const std::string& sname) : data_type(type), state(UNINITIALIZED) {
+	CVariable_Container(CPar_Data_Type::data_type_t type, void* _existing, const std::string& sname) : data_type(type), state(UNINITIALIZED) {
 		construct_class(sname);
-		add_existing_scalar(existing);
+		add_existing_scalar(_existing);
 	}
 	//2) with internal storage.
 	CVariable_Container(CPar_Data_Type::data_type_t type, const std::vector<int>& lengths, const std::string& sname) 
@@ -51,10 +51,10 @@ public:
 		alloc(lengths);
 	}
 	//3) without allocation. Just name it, type it, and load the number of dimensions.
-	CVariable_Container(CPar_Data_Type::data_type_t type, int dims, const std::string& sname) 
+	CVariable_Container(CPar_Data_Type::data_type_t type, int _dims, const std::string& sname) 
 		:  data_type(type), state(UNINITIALIZED) {
 		construct_class(sname);
-		this->dims = dims;
+		this->dims = _dims;
 		state = METADATA_LOADED;
 	}
 	//4) Copy constructor. Note that this constructor ignores the "existing" flag. It just allocates storage.
@@ -68,8 +68,8 @@ public:
 	//Destructor. Deallocates space.
 	virtual ~CVariable_Container(){
 		if (state == ALLOCATED && !this->existing) {
-			operator delete(data_base);
-			if (this->dims >1) operator delete(data);
+			::operator delete(data_base);
+			if (this->dims >1) ::operator delete(data);
 		}
 	}
 
@@ -146,7 +146,7 @@ private:
 	int				dims; //number of dimensions
 	std::vector<int>dim_lengths; //size of each dimension.
 	void*			data; //pointer to the data structure (THE ARRAY OF POINTERS). HAS TO BE RECASTED IN THE CALLING CLASS.
-	void*			data_base; //the base address of the data (the actual memory obtained through malloc)
+	void*			data_base; //the base address of the data (the actual memory obtained through "operator new(<bytes>)")
 	int				size_bytes; //allocated size (of the actual data) in bytes
 	int				size_elems; //number of allocated elements. (size_bytes/sizeof(numeric_type))
 	bool			existing; //if the storage was assigned elsewhere.

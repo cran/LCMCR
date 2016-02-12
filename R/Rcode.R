@@ -65,6 +65,7 @@ setRefClass(
 		.self$Set_Seed(.self$local_seed)
 	  } #default behavior: do nothing. C++ class will seed automatically from clock.
 	  #Control messages
+	  if (!interactive()) output = FALSE
 	  if (output){
 		tmp <- .Call('R_Activate_Chain_Messages', .self$pointer)
 	  } else {
@@ -76,6 +77,7 @@ setRefClass(
     Update = function(iter, output = TRUE){
 	"Runs num_iter iterations of the sampler. Set output = FALSE to suppress console output."
       #SEXP R_Update_Model(SEXP p, SEXP int_iter)
+	  if (!interactive()) output = FALSE
 	  if (output){
 		tmp <- .Call('R_Activate_Updating_Output', .self$pointer)
 	  } else {
