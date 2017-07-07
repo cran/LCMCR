@@ -78,7 +78,7 @@ protected:
 	void _add_parameter(const std::string& key, const CPar_Data_Type::data_type_t& type, void* dst_variable_address, int dims, ...){
 				int i;
 		std::vector<int> lengths( dims );
-		va_list args;
+		std::va_list args;
 		va_start(args, dims);
 		for (i = 0; i < dims; i++){
 			lengths[i] = va_arg(args, int);

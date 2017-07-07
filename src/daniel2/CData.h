@@ -26,7 +26,7 @@
 #define _CDATA_H
 
 #include <string>
-#include <stdarg.h>
+#include <cstdarg>
 #include <stdexcept>
 #include "CParams_generic.h"
 #include "CVariable_Container.h"
@@ -79,7 +79,7 @@ public:
 		int i;
 		int dims = data_container[key].get_dims();//.get_dims(key);
 		std::vector<int> lengths( dims );
-		va_list args;
+		std::va_list args;
 		va_start(args, raw_data);
 		for (i = 0; i < dims; i++){
 			lengths[i] = va_arg(args, int);
@@ -137,7 +137,7 @@ protected:
 	void* _Declare_and_Allocate_derived(const std::string& key, CPar_Data_Type::data_type_t type, int dims, ...){
 		int i;
 		std::vector<int> lengths( dims );
-		va_list args;
+		std::va_list args;
 		va_start(args, dims);
 		for (i = 0; i < dims; i++){
 			lengths[i] = va_arg(args, int);

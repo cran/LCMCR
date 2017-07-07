@@ -315,15 +315,17 @@ void CNPLCM_CR_Basic_Freq::Initializes(){
 			par->lambdaJK[j][k] = p;
 		}
 	}
-	par->alpha = 0.3 / double(K);
-	for(int k =0; k < 4; k++){
-		par->nuK[k] = 0.25 * 0.9;
+	par->alpha = 0.3 / double(par->K);
+	
+	int startK = std::min(4, par->K);
+	for(int k = 0; k < startK; k++){
+		par->nuK[k] = 0.9 / startK;
 	}
-	for(int k = 4; k < par->K; k++){
-		par->nuK[k] = 0.1 / double (par->K -4);
+	for(int k = startK; k < par->K; k++){
+		par->nuK[k] = 0.1 / double (par->K - startK);
 	}
 	//warm-up run. In order to fix the 
-	DAN_PRINTF("WARMING UP...\n");
+	//DAN_PRINTF("WARMING UP...\n");
 	for (int i = 0; i < 500; ++i){
 		//sam_z();
 		sam_countzIK();

@@ -50,11 +50,11 @@ lcmCR(captures, tabular = FALSE, in_list_label = "1", not_in_list_label = "0",
 	Input data must be provided as a data frame.  The first J columns are two-level factors representing the multiple-recapture lists.  Arguments \code{in_list_label} and \code{not_in_list_label} indicate the labels that represent inclusion and exclusion from the lists.  This function supports two input formats:
 \itemize{
 	\item When \code{tabular=FALSE} each row represents a single individual's capture history. The number of rows must match  the size of the observed population. Rows indicating no capture in all list simultaneously are illegal.
-	\item When \code{tabular=TRUE} each row represents a particular capture pattern. This format requires an additional numeric column at the right indicating the count corresponding to such pattern. 
+	\item When \code{tabular=TRUE} each row represents a unique capture pattern. This format requires an additional numeric column at the right, called "\code{Freq}", indicating the count corresponding to such pattern. 
 }
 }
 \value{
-An object of class \code{\link{lcm_CR_Basic}} initialized, after running \code{burnin} iterations.
+An object of class \code{\link{lcm_CR_Basic}} initialized and ready to use.
 }
 %\references{
 %}

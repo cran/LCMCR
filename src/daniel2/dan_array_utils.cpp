@@ -87,7 +87,7 @@ void *dan_flat2arrayND(void* data, int size_elem, int dims, ...){
 	int lengths[20];
 	int i;
 
-	va_list args;
+	std::va_list args;
 	va_start(args,dims);
 	for (i = 0; i < dims; i++){
 		lengths[i] = va_arg(args, int);
@@ -144,7 +144,7 @@ void *dan_flat2arrayND_cpp(void* data, int size_elem, int dims, ...){
 	//read the variable input...
 	std::vector<int> lengths(dims);
 	int i;
-	va_list args;
+	std::va_list args;
 	va_start(args,dims);
 	for (i = 0; i < dims; i++){
 		lengths[i] = va_arg(args, int);

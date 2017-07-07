@@ -122,7 +122,7 @@ void dan_transpose_untyped(const void* orig_flat, void* dst_flat, const int& dim
 		size *= lengths[i];
 	}
 	if (dims == 1) {
-		memcpy(dst_flat, orig_flat, size_elem * lengths[0]);
+		std::memcpy(dst_flat, orig_flat, size_elem * lengths[0]);
 		return;
 	}
 	for (int j = 0; j < size; j ++){
@@ -137,7 +137,7 @@ void dan_transpose_untyped(const void* orig_flat, void* dst_flat, const int& dim
 			multiplier /= lengths[i - 1];
 		}
 		//dst_flat[y] = orig_flat[j];
-		memcpy( (void*)((char*)dst_flat + size_elem * y), (void*)((char*)orig_flat + size_elem * j), size_elem);
+		std::memcpy( (void*)((char*)dst_flat + size_elem * y), (void*)((char*)orig_flat + size_elem * j), size_elem);
 	}
 }
 
@@ -150,7 +150,7 @@ void dan_transpose(const T* orig_flat, T* dst_flat, const int& dims, const int* 
 		size *= lengths[i];
 	}
 	if (dims == 1) {
-		memcpy(dst_flat, orig_flat, sizeof(T) * lengths[0]);
+		std::memcpy(dst_flat, orig_flat, sizeof(T) * lengths[0]);
 		return;
 	}
 	for (int j = 0; j < size; j ++){
@@ -182,7 +182,7 @@ void dan_aperm(const T* orig_flat, T* dst_flat, const int& dims, const int lengt
 		prod *= lengths[order[i]];
 	}
 	if (dims == 1) {
-		memcpy(dst_flat, orig_flat, sizeof(T) * lengths[0]);
+		std::memcpy(dst_flat, orig_flat, sizeof(T) * lengths[0]);
 		return;
 	}
 	for (int j = 0; j < size; j ++){

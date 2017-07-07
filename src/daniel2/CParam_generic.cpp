@@ -17,7 +17,7 @@
  */
 
 #include <cstdlib>
-#include <stdarg.h> 
+#include <cstdarg> 
 #include "dan_array_utils.h"
 #include "CParams_generic.h"
 #include <iostream>
@@ -59,7 +59,7 @@ void* CParams_generic::add(const std::string &key, CPar_Data_Type::data_type_t t
 void* CParams_generic::add(const std::string &key, CPar_Data_Type::data_type_t type, int dims,  ...){
 	int i;
 	std::vector<int> lengths(dims);
-	va_list args;
+	std::va_list args;
 	va_start(args, dims);
 	for (i = 0; i < dims; i++){
 		lengths[i] = va_arg(args, int);

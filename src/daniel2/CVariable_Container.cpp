@@ -55,7 +55,7 @@ void CVariable_Container::alloc(const std::vector<int>& lengths){
 //void CVariable_Container::alloc(int dims,  ...){
 //	int i;
 //	std::vector<int> lengths(dims);
-//	va_list args;
+//	std::va_list args;
 //	va_start(args, dims);
 //	for (i = 0; i < dims; i++) lengths[i] = va_arg(args, int);
 //	va_end(args);
@@ -101,7 +101,7 @@ void CVariable_Container::allocate_space(const std::vector<int>& lengths){
 }
 void CVariable_Container::allocate_space(int _dims,...){
 	std::vector<int> lengths(_dims);
-	va_list args;
+	std::va_list args;
 	va_start(args, _dims);
 	for (int i = 0; i < _dims; i++) lengths[i] = va_arg(args, int);
 	va_end(args);

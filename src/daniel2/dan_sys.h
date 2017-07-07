@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h> //for ellipsis arguments
+#include <cstdarg> //for ellipsis arguments
 #ifdef _WIN32
 #include <direct.h>
 #define mkdir(x,y) _mkdir(x)
@@ -48,21 +48,21 @@
 #define DAN_PRINTF Rprintf
 #else
 inline void DAN_ERR_EXIT(const char* f, ...) {
-    va_list args;
+    std::va_list args;
     va_start(args,f);
     vfprintf(stderr, f,args);
 	va_end(args);
 	exit(1);
 }
 inline void DAN_ERR_NOABORT(const char* f, ...) {
-    va_list args;
+    std::va_list args;
     va_start(args,f);
     //vfprintf(stderr, f, args);
 	vprintf(f, args);
 	va_end(args);
 }
 inline void DAN_PRINTF(const char* f, ...) {
-    va_list args;
+    std::va_list args;
     va_start(args, f);
     vprintf(f, args);
 	va_end(args);

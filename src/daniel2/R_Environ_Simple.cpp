@@ -161,20 +161,24 @@ SEXP R_Get_Trace(SEXP p, SEXP trace){
 	SEXP r = R_NilValue; //int or double
 	SEXP ret_int_dims = R_NilValue; //int
 	char* key = const_cast<char*>(CHAR(STRING_ELT(trace,0)));
-	if (!m->Tracer().check_trace(key))//->verify_trace(key)) 
+	if (!m->Tracer().check_trace(key))
 		return(R_NilValue);
 	std::vector<int> dims = m->Tracer().get_dims(key); //NOTE THAT FIRST DIMENSION IS THE *CAPACITY*, NOT ACTUAL SIZE
 	int ndims = dims.size();
 	int nelems = m->Tracer().get_size_elems(key);
 	CPar_Data_Type& type = m->Tracer().get_data_type(key);
 	switch (type.get_data_type()){
-		case CPar_Data_Type::T_DOUBLE: //CPar_defs::T_DOUBLE:
+		case CPar_Data_Type::T_DOUBLE: 
 			PROTECT(r = allocVector(REALSXP, nelems));
-			m->Tracer().Copy_trace(key, REAL(r));//copy_trace(key, REAL(r));
+			m->Tracer().Copy_trace(key, REAL(r));
 			break;
 		case CPar_Data_Type::T_INT:
 			PROTECT(r = allocVector(INTSXP, nelems));
-			m->Tracer().Copy_trace(key, INTEGER(r));//copy_trace(key, INTEGER(r));
+			m->Tracer().Copy_trace(key, INTEGER(r));
+			break;
+		default:
+			//other types not implemented at the moment.
+			DAN_ERR_EXIT("Data type not implemented\n");
 			break;
 	}
 	// Note that the vector is in rightmost-varying-fastest. We set the "dim"
