@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -246,7 +246,6 @@ void dan_neg_multinomial(const gsl_rng* r, const int &k, const int &size, const 
 	for (int i=0; i < size; i++){
 		norm += p[i];
 	}
-	//double a = norm / (1.0 - norm);
 	double gamma = gsl_ran_gamma(r, (double) k, 1.0);
 	for (int i = 0; i < size; i ++){
 		ns[i] = gsl_ran_poisson(r, gamma * p[i]/(1.0-norm));

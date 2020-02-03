@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@
 #include <algorithm>
 #include <string>
 #include <math.h>
+#include "daniel2/dan_math_gsl.h"
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h> //special functions (for gamma)
-#include "daniel2/dan_math_gsl.h"
 #include "definitions.h"
 #include "CData_DM.h"
 #include "NPLCM_CR_Basic_Freq.h"
@@ -33,8 +33,7 @@ Implementation of class CParams_NPLCM_CR
 //Generic Constructor
 void CParams_NPLCM_CR_Basic_Freq::class_construct(){
 	//allocate
-	_add_parameter("lambdaJK", CPar_Data_Type::T_DOUBLE, &lambdaJK, 2, J, K);
-	//_add_parameter("zI",  CPar_Data_Type::T_INT, &zI, 1, n);
+	_add_parameter("log_lambdaJK2", CPar_Data_Type::T_DOUBLE, &log_lambdaJK2, 3, J, K, 2);
 	_add_parameter("count_zIK",  CPar_Data_Type::T_INT, &count_zIK, 2, M, K);
 	_add_parameter("nuK", CPar_Data_Type::T_DOUBLE, &nuK, 1, K);
 	_add_parameter("log_nuK", CPar_Data_Type::T_DOUBLE, &log_nuK, 1, K);
@@ -51,6 +50,10 @@ void CParams_NPLCM_CR_Basic_Freq::class_construct(){
 //_add_existing_scalar("n0_max", CPar_Data_Type::T_INT, &n0_max);
 	_add_existing_scalar("prob_zero", CPar_Data_Type::T_DOUBLE, &prob_zero);
 	_add_existing_scalar("M", CPar_Data_Type::T_INT, &M);
+	_add_existing_scalar("n", CPar_Data_Type::T_INT, &n);
+	_add_existing_scalar("J", CPar_Data_Type::T_INT, &J);
+	_add_existing_scalar("K", CPar_Data_Type::T_INT, &K);
+
 }
 
 void CParams_NPLCM_CR_Basic_Freq::initizalize(gsl_rng *r){
@@ -61,11 +64,11 @@ void CParams_NPLCM_CR_Basic_Freq::initizalize(gsl_rng *r){
 	k_star = 0;
 	(*this)["nuK"].fill(1.0/double(K));
 	(*this)["log_nuK"].fill(-log(double(K)));
-	(*this)["lambdaJK"].fill(0.5);
+	//(*this)["lambdaJK"].fill(1.0 - 1e-2);
+	(*this)["log_lambdaJK2"].fill(1.0 - 1e-2);
 	(*this)["countK"].fill(0);
 	(*this)["count0K"].fill(0);
 	(*this)["count_zIK"].fill(0); 
-	//(*this)["zI"].fill(0);
 	(*this)["aux_JK2"].fill(0);
 }
 
@@ -87,73 +90,69 @@ void CNPLCM_CR_Basic_Freq::Update() {
 }
 
 void CNPLCM_CR_Basic_Freq::Get_Probs_Observed_Data(double *probs_n){
-	//compute the probability of each observed data point.
-	// user must provide properly allocated space.
-	for (int i = 0; i < data->n; i++){
-		double sum = 0.0;
-		for (int k = 0; k < par->K; k++){
-			double prod = par->nuK[k];
-			for (int j = 0; j < par->J; j++){
-				prod *=  par->lambdaJK[j][k];
-			}
-			sum += prod;
-		}
-		probs_n[i] = sum;
-	}
+	////compute the probability of each observed data point.
+	//// user must provide properly allocated space.
+	//for (int i = 0; i < data->n; i++){
+	//	double sum = 0.0;
+	//	for (int k = 0; k < par->K; k++){
+	//		double prod = par->nuK[k];
+	//		for (int j = 0; j < par->J; j++){
+	//			prod *=  par->lambdaJK[j][k];
+	//		}
+	//		sum += prod;
+	//	}
+	//	probs_n[i] = sum;
+	//}
 }
  
-
 inline
 void CNPLCM_CR_Basic_Freq::sam_lambda(){
 	int tmp1 = 1, tmp0 = 0;
-	CVariable_Container& lJK = (*par)["lambdaJK"];
+	//CVariable_Container& lJK = (*par)["log_lambdaJK2"];
 	CVariable_Container& raux_JK2 = (*par)["aux_JK2"];
 	this->tabulate_elements(); //accumulate the counts of samples.
 	//add the prior (+1) and sample
 	for(int j = 0; j < data->J; j++){
 		for(int k = 0; k < par->K; k++){
 			//add prior and cast and sample!
-			//par->lambdaJK[j][k] = gsl_ran_beta(r, double(1 + par->aux_JK2[j][k][1]), double(1 + par->aux_JK2[j][k][0]));
-			lJK.arr_elem<double>(j,k) = gsl_ran_beta(r, double(1 + raux_JK2.arr_elem<int>(j, k, tmp1)), 
-				double(1 + raux_JK2.arr_elem<int>(j, k, tmp0)));
+			double a = 1.0 + double(raux_JK2.arr_elem<int>(j, k, tmp1));
+			double b = 1.0 + double(raux_JK2.arr_elem<int>(j, k, tmp0));
+			double A = dan_log_gamma_1(r, a);
+			double B = dan_log_gamma_1(r, b);
+			double C = dan_log_sum(A, B);
+			par->log_lambdaJK2[j][k][1] = A - C;
+			par->log_lambdaJK2[j][k][0] = B - C;
+			//lJK.arr_elem<double>(j,k) = gsl_ran_beta(r, a, b);
 		}
 	}
 }
 
-//inline
-//void CNPLCM_CR_Basic_Freq::sam_z(){
-//	int i, j, k;
-//	double prod;
-//	static double probs[1000];
-//	for (i = 0; i < data->n; i++){
-//		for (k = 0; k < par->K; k++){
-//			prod= par->nuK[k];
-//			for (j = 0; j < par->J; j++){
-//				prod *= data->x[i][j] == 1 ? par->lambdaJK[j][k] : 	1.0 - par->lambdaJK[j][k];
-//			}
-//			probs[k] = prod;
-//		}
-//		par->zI[i] = dan_multinomial_1(r, par->K, probs, false);
-//	}
-//}
-
 inline
 void CNPLCM_CR_Basic_Freq::sam_countzIK(){
-	double probs[1000];//should have K elements
-	double prod = 1.0;
+	std::vector<double> probs(par->K, 0.0);
 	for (int m = 0; m < data->ncells; m++){
+		int* X = data->cells[m];
+		double lg = -INFINITY;
 		for (int k = 0; k < par->K; k++){
-			prod= par->nuK[k];
+			double lprod = par->log_nuK[k];
 			for (int j = 0; j < par->J; j++){
-				prod *= data->cells[m][j] == 1 ? par->lambdaJK[j][k] : 	1.0 - par->lambdaJK[j][k];
+				//prod *= data->cells[m][j] == 1 ? par->lambdaJK[j][k] : 	1.0 - par->lambdaJK[j][k];
+				lprod += par->log_lambdaJK2[j][k][ X[j] ];
 			}
-			probs[k] = prod;
+			probs[k] = lprod;
+			lg = lprod > lg ? lprod : lg;
+		}
+		for (int k = 0; k < par->K; k++){
+			probs[k] = exp(probs[k] - lg);
 		}
 		//sample!
 		if (data->freqM[m] > 1){
-			gsl_ran_multinomial(r, par->K, data->freqM[m], probs, (unsigned int*)(par->count_zIK[m]));
+			gsl_ran_multinomial(r, par->K, data->freqM[m], &(probs[0]), (unsigned int*)(par->count_zIK[m]));
 		} else {
-			int z = dan_multinomial_1(r, par->K, probs, false);
+			//assert(data->freqM[m] ==1);
+			if (data->freqM[m] < 1) 
+				DAN_ERR_EXIT("freqM[m] < 1");
+			int z = dan_multinomial_1(r, par->K, &(probs[0]), false);
 			std::fill(par->count_zIK[m], par->count_zIK[m] + par->K, 0);
 			par->count_zIK[m][z] = 1;
 		}
@@ -206,7 +205,8 @@ void CNPLCM_CR_Basic_Freq::sam_nu(){
 
 inline
 void CNPLCM_CR_Basic_Freq::sam_alpha(){
-	par->alpha = gsl_ran_gamma(r, par->a_alpha + double(par->K) - 1.0, 1.0 / (par->b_alpha - par->log_nuK[par->K-1]));
+	par->alpha = gsl_ran_gamma(r, par->a_alpha + double(par->K) - 1.0, 
+	1.0 / (par->b_alpha - par->log_nuK[par->K-1]));
 }
 
 inline
@@ -214,11 +214,12 @@ void CNPLCM_CR_Basic_Freq::compute_probs_miss(){
 	int k, j;
 	par->prob_zero = 0.0;
 	for (k = 0; k < par->K; ++k){
-		double prod = par->nuK[k];
+		double lprod = par->log_nuK[k];
 		for (j = 0; j < data->J; ++j){
-			prod *= 1.0 - par->lambdaJK[j][k];
+			//prod *= 1.0 - par->lambdaJK[j][k];
+			lprod += par->log_lambdaJK2[j][k][0];
 		}
-		par->prob_zero += prod;
+		par->prob_zero += exp(lprod);
 	}
 }
 
@@ -229,7 +230,10 @@ void CNPLCM_CR_Basic_Freq::sam_n0(){
 	// the number of failures occurring before n successes in independent trials with probability 
 	// p of success. The probability distribution for negative binomial variates is,
 	// p(k) = {\Gamma(n + k) \over \Gamma(k+1) \Gamma(n) } p^n (1-p)^k NOTE THE +1 IN GAMMA(K+1)!!!!
-	par->n0 = gsl_ran_negative_binomial(r, 1.0 - par->prob_zero, data->n); //<-=-this one is the correct.
+	do {
+		par->n0 = gsl_ran_negative_binomial(r, 1.0 - par->prob_zero, data->n); //<-=-this one is the correct.
+	} while (par->n0 > 20 * data->n);
+
 	//This corresponds to an (improper) prior P(Nmis|n) \propto n/(Nmis+n). This ensures that after integrating Nmis
 	// the joint probability correspond to the correct truncated distribution.
 }
@@ -237,13 +241,22 @@ void CNPLCM_CR_Basic_Freq::sam_n0(){
 inline
 void CNPLCM_CR_Basic_Freq::sam_z0x0(){
 	std::vector<double> table_z(par->K);
-	std::vector<unsigned int> counts(par->K);
+	if (par->n0 == 0){
+		(*par)["count0K"].fill(0);
+		return;
+	}
+	double lg = -INFINITY;
 	for (int k = 0; k < par->K; k++){
-		double p = par->nuK[k] ;
+		double lp = par->log_nuK[k];
 		for(int j = 0; j < par->J; j++){
-			p *= 1.0 - par->lambdaJK[j][k];
+			//p *= 1.0 - par->lambdaJK[j][k];
+			lp += par->log_lambdaJK2[j][k][0];
 		}
-		table_z[k] = p;
+		lg = lp > lg ? lp : lg;
+		table_z[k] = lp;
+	}
+	for (int k = 0; k < par->K; k++){
+		table_z[k] = exp(table_z[k] - lg);
 	}
 	gsl_ran_multinomial(r, par->K, par->n0, &(table_z[0]), (unsigned int*)(par->count0K));
 }
@@ -269,6 +282,7 @@ void CNPLCM_CR_Basic_Freq::tabulate_elements(){
 			for (int j = 0; j <  par->J; j++){
 				//par->aux_JK2[j][k][ cell[j] ] += data->freqM[m];
 				aux_ref.arr_elem<int>(j, k, cell[j]) += par->count_zIK[m][k]; //data->freqM[m];
+
 			}
 		}
 	}
@@ -289,7 +303,7 @@ void CNPLCM_CR_Basic_Freq::Initializes(){
 	CChain::Initializes();
 
 	//init nu and alpha
-	par->alpha = 1;
+	par->alpha = 1.0;
 	double lacc = 0.0;
 	for (int k = 0; k < par->K - 1; k++){
 		g1 = dan_log_gamma_1(r, 1);
@@ -312,7 +326,9 @@ void CNPLCM_CR_Basic_Freq::Initializes(){
 		}		
 		double p = double(sum_J[j]) / double(par->n);
 		for (int k = 0; k < par->K; k++){
-			par->lambdaJK[j][k] = p;
+			//par->lambdaJK[j][k] = p;
+			par->log_lambdaJK2[j][k][1] = log(p);
+			par->log_lambdaJK2[j][k][0] = log1p(-p);
 		}
 	}
 	par->alpha = 0.3 / double(par->K);
@@ -340,6 +356,7 @@ void CNPLCM_CR_Basic_Freq::Initializes(){
 		//DAN_PRINTF("\riter = %d kstar = %d \n", i, par->k_star);
 	}
 	//reorder latent classes
+	//THIS IS THE BUG
 	permute_latent_classes_by_nu();
 }
 
@@ -348,7 +365,7 @@ bool _CNPLCM_CR_Basic_Freq_comparator (const _CNPLCM_CR_Basic_Freq_mypair& l, co
 	return (l.first < r.first);
 }
 void CNPLCM_CR_Basic_Freq::permute_latent_classes_by_nu(){
-	//reorder latent classes increasingly according to nuK. 
+	//reorder latent classes increasingly according to nuK.
 	std::vector<int> new2old(par->K), old2new(par->K);
 	std::vector<_CNPLCM_CR_Basic_Freq_mypair> s_index(par->K);
 	for (int k = 0; k < par->K; k++){
@@ -356,7 +373,7 @@ void CNPLCM_CR_Basic_Freq::permute_latent_classes_by_nu(){
 		s_index[k].second = k;
 	}
 	std::sort(s_index.begin(), s_index.end(), _CNPLCM_CR_Basic_Freq_comparator);
-	std::vector<int> perm(K);
+	std::vector<int> perm(par->K);
 	for (int k = 0; k < par->K; k++){
 		new2old[k] = s_index[k].second;
 	} // new2old[a] == b <=> former b-th element is now a-th element.
@@ -364,9 +381,7 @@ void CNPLCM_CR_Basic_Freq::permute_latent_classes_by_nu(){
 		old2new[ new2old[k] ] = k;
 	}
 	CParams_NPLCM_CR_Basic_Freq *tmp = new CParams_NPLCM_CR_Basic_Freq(*par);
-	//for (int i = 0; i < par->n; i++){
-	//	tmp->zI[i] = old2new[ par->zI[i] ];
-	//}
+
 	for (int m = 0; m < par->M; m++){
 		for (int k = 0; k < par->K; k++){
 			tmp->count_zIK[m][k] = par->count_zIK[m][ new2old[k] ];
@@ -374,7 +389,9 @@ void CNPLCM_CR_Basic_Freq::permute_latent_classes_by_nu(){
 	}	
 	for (int j = 0; j < par->J; j++){
 		for (int k = 0; k < par->K; k++){
-			tmp->lambdaJK[j][k] = par->lambdaJK[j][ new2old[k] ];
+			//tmp->lambdaJK[j][k] = par->lambdaJK[j][ new2old[k] ];
+			tmp->log_lambdaJK2[j][k][0] = par->log_lambdaJK2[j][ new2old[k] ][0];
+			tmp->log_lambdaJK2[j][k][1] = par->log_lambdaJK2[j][ new2old[k] ][1];
 			tmp->aux_JK2[j][k][0] = par->aux_JK2[j][ new2old[k] ][0];
 			tmp->aux_JK2[j][k][1] = par->aux_JK2[j][ new2old[k] ][1];
 		}
@@ -385,14 +402,7 @@ void CNPLCM_CR_Basic_Freq::permute_latent_classes_by_nu(){
 		tmp->countK[k] = par->countK[new2old[k]];
 		tmp->count0K[k] = par->count0K[new2old[k]];
 	}
-	//std::copy(tmp->zI, tmp->zI + par->n, par->zI);
-	std::copy(tmp->count_zIK[0], tmp->count_zIK[0] + par->M * par->J, par->count_zIK[0]);
-	std::copy(tmp->lambdaJK[0], tmp->lambdaJK[0] + par->J * par->K, par->lambdaJK[0]);
-	std::copy(tmp->aux_JK2[0][0], tmp->aux_JK2[0][0] + par->J * par->K * 2, par->aux_JK2[0][0]);
-	std::copy(tmp->nuK, tmp->nuK + par->K, par->nuK);
-	std::copy(tmp->log_nuK, tmp->log_nuK + par->K, par->log_nuK);
-	std::copy(tmp->countK, tmp->countK + par->K, par->countK);
-	std::copy(tmp->count0K, tmp->count0K + par->K, par->count0K);
+	*par = *tmp;
 	delete tmp;
 }
 

@@ -5,14 +5,14 @@
 \title{
 Capture-Recapture Estimation using Bayesian Nonparametric latent-class models}
 \description{
-This package implements a fully Bayesian multiple-recapture method for estimating the unknown size of a population using non-parametric latent class models. This is an implementation of the method described in Manrique-Vallier (forthcoming). The estimation algorithm is based on Markov Chain Monte Carlo sampling. 
+This package implements a fully Bayesian multiple-recapture method for estimating the unknown size of a population using non-parametric latent class models. This is an implementation of the method described in Manrique-Vallier (2016). The estimation algorithm is based on Markov Chain Monte Carlo sampling. 
 }
 \details{
 \tabular{ll}{
 Package: \tab LCMCR\cr
 Type: \tab Package\cr
-Version: \tab 0.4.2\cr
-Date: \tab 2016-02-13\cr
+Version: \tab 0.4.11 \cr
+Date: \tab 2020-02-03\cr
 License: \tab GPL >= 2\cr
 }
  }
@@ -20,7 +20,7 @@ License: \tab GPL >= 2\cr
 Daniel Manrique-Vallier \email{dmanriqu@indiana.edu}
 }
 \references{
-Manrique-Vallier, D. (forthcoming) "Bayesian Population Size Estimation Using Dirichlet Process Mixtures", Biometrics. 
+Manrique-Vallier, D. (2016) "Bayesian Population Size Estimation Using Dirichlet Process Mixtures", Biometrics. 
 }
 
 \examples{
@@ -31,11 +31,12 @@ data(kosovo_aggregate)
 
 ###Example 1: Capture-Recapture estimation using convenience functions###
 #Create and initialize an LCMCR object for MCMC sampling#
+\dontrun{
 sampler <- lcmCR(captures = kosovo_aggregate, tabular = FALSE, in_list_label = '1',
       not_in_list_label = '0', K = 10, a_alpha = 0.25, b_alpha = 0.25, 
       seed = 'auto', buffer_size = 10000, thinning = 100)
 #Obtain 1000 samples from the posterior distribution of N#
-N <- lcmCR_PostSampl(sampler, burnin = 10000, samples = 1000, thinning = 100)
+N <- lcmCR_PostSampl(sampler, burnin = 10000, samples = 1000, thinning = 100, output = FALSE)
 
 #Posterior quantiles#
 quantile(N, c(0.025, 0.5, 0.975))
@@ -47,7 +48,7 @@ sampler <- lcmCR(captures = kosovo_aggregate, tabular = FALSE, in_list_label = '
                  seed = 'auto', buffer_size = 1000, thinning = 100)
 
 #Run 10000 iterations as burn-in
-sampler$Update(10000)
+sampler$Update(10000, output = FALSE)
 
 #List all parameters from the model
 sampler$Get_Param_List()
@@ -62,7 +63,7 @@ sampler$Get_Trace_List()
 sampler$Activate_Tracing()
 
 #Run the sampler 100000 times
-sampler$Update(100000)
+sampler$Update(100000, output = FALSE)
 
 #Get the 1000 samples from the posterior distribution of N
 N <- sampler$Get_Trace('n0') + sampler$n
@@ -72,5 +73,5 @@ plot(N, type = 'l')
 
 #Compute posterior quantiles
 quantile(N, c(0.025, 0.5, 0.975))
-
+}
 }

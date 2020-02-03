@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,28 +16,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-/*
-	CData_DM class implementation
-	2010-10-20 - multilevel extensions
-	2011-06-02 - Contingency table generation
-	2013-10-16 - Redesign. Using CParams_generic container and new CData base class.
-*/
+#ifndef _R_LCM_CR_STRAT_H_
+#define _R_LCM_CR_STRAT_H_
 
-#include <stdio.h>
-#include <string.h>
-#include <cstdlib>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include "CData_DM.h"
+#include "R.h"
+#include "Rinternals.h"
+#include "R_ext/Utils.h"
 
-#include "daniel2/dan_array_utils.h"
-#include "daniel2/dan_math.h"
-//using namespace std;
+extern "C"
+{
+SEXP R_Create_LCM_CR_Strat(
+	SEXP x_flat, SEXP n_strat_plus_NA, SEXP J_plus_strat,
+	SEXP n, SEXP K,
+	SEXP a_alpha, SEXP b_alpha, SEXP a_lambda, SEXP b_lambda, 
+	SEXP min_n, SEXP min_lists, SEXP N_Max_factor,
+	SEXP len_buffer, SEXP subsamp
+);
+}
 
-
-
-
-
-
-
+#endif

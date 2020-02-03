@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,11 +63,11 @@ SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ);
 
 //Data management functions:
 // These functions take arrays in R order (leftmost varying fastest)
-void R_Load_CData(CData& d, SEXP data_list);
-CVariable_Container* R_Array2CVariable_Container(SEXP r_data, const std::string& name);
-void R_Allocate_And_Load_CVariable (SEXP r_data, CVariable_Container& var, const std::string& name);
-void R_Load_CParams_generic(SEXP list, CParams_generic& par);
-void R_Load_CData(CData& d, SEXP data_list);
+//void R_Load_CData(CData& d, SEXP data_list);
+//CVariable_Container* R_Array2CVariable_Container(SEXP r_data, const std::string& name);
+//void R_Allocate_And_Load_CVariable (SEXP r_data, CVariable_Container& var, const std::string& name);
+//void R_Load_CParams_generic(SEXP list, CParams_generic& par);
+//void R_Load_CData(CData& d, SEXP data_list);
 
 //More functions
 CModel_Environ_Simple_base* get_env(SEXP p);

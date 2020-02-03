@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -90,7 +90,11 @@ SEXP R_Update_Model(SEXP p, SEXP int_iter){
 	try{
 		m->update_model(*INTEGER(int_iter));
 	} catch (const std::exception& e){
-		DAN_ERR_EXIT("%s", e.what());
+		std::string s = "Updating error (";
+		s += e.what();
+		s += ")";
+		DAN_ERR_EXIT(s.c_str());
+		p = R_NilValue;
 	}
 	return(p);
 }
@@ -389,138 +393,138 @@ SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
 }
 
 
-CVariable_Container* R_Array2CVariable_Container(SEXP r_data, const std::string& name){
-	//INTSXP and REALSXPs into a new CVariable_Container
-	//If exception, the object is not created.
-	CPar_Data_Type::data_type_t type;
-	void* raw_pointer;
-	std::string err;
-	switch( TYPEOF(r_data) ){
-	case INTSXP:
-		type = CPar_Data_Type::T_INT;
-		raw_pointer = (void*) INTEGER(r_data);
-		break;
-	case REALSXP:
-		type = CPar_Data_Type::T_DOUBLE;
-		raw_pointer = (void *) REAL(r_data);
-		break;
-	default:
-		err = "Not implemented data type reader for " + name;
-		throw std::runtime_error(err);
-		break;
-	}
-	//Determine dimensions.
-	int size_elems = Rf_length(r_data);
-	SEXP r_dims = getAttrib(r_data, R_DimSymbol);
-	int n_dims = Rf_length(r_dims);
-	std::vector<int> v(n_dims);
-	if(n_dims == 0) {
-		n_dims = 1;
-		v.push_back(size_elems);
-	} else {
-		int* lengths = INTEGER(r_dims);
-		std::copy(lengths, lengths + n_dims, v.begin());
-	}
-	//allocate and copy data. -> exception thrown if failed.
-	CVariable_Container* var = new CVariable_Container(type, n_dims, name);
+//CVariable_Container* R_Array2CVariable_Container(SEXP r_data, const std::string& name){
+//	//INTSXP and REALSXPs into a new CVariable_Container
+//	//If exception, the object is not created.
+//	CPar_Data_Type::data_type_t type;
+//	void* raw_pointer;
+//	std::string err;
+//	switch( TYPEOF(r_data) ){
+//	case INTSXP:
+//		type = CPar_Data_Type::T_INT;
+//		raw_pointer = (void*) INTEGER(r_data);
+//		break;
+//	case REALSXP:
+//		type = CPar_Data_Type::T_DOUBLE;
+//		raw_pointer = (void *) REAL(r_data);
+//		break;
+//	default:
+//		err = "Not implemented data type reader for " + name;
+//		throw std::runtime_error(err);
+//		break;
+//	}
+//	//Determine dimensions.
+//	int size_elems = Rf_length(r_data);
+//	SEXP r_dims = getAttrib(r_data, R_DimSymbol);
+//	int n_dims = Rf_length(r_dims);
+//	std::vector<int> v(n_dims);
+//	if(n_dims == 0) {
+//		n_dims = 1;
+//		v.push_back(size_elems);
+//	} else {
+//		int* lengths = INTEGER(r_dims);
+//		std::copy(lengths, lengths + n_dims, v.begin());
+//	}
+//	//allocate and copy data. -> exception thrown if failed.
+//	CVariable_Container* var = new CVariable_Container(type, n_dims, name);
+//
+//	try{
+//		var->allocate_space(v);
+//	} catch (const std::exception& e){
+//		err = "Cannot allocate space for " + name + ". Object destroyed.";
+//		delete var;
+//		throw std::runtime_error(err);
+//	}
+//	std::reverse(v.begin(), v.end());
+//	dan_transpose_untyped(raw_pointer, var->get_data_base(), 
+//		var->get_dims(), &v.front(), 
+//		var->get_size_dataelem()
+//	);
+//	return var;
+//}
+//
+//void R_Allocate_And_Load_CVariable (SEXP r_data, CVariable_Container& var, const std::string& name){
+//	//reads INTSXP and REALSXPs into CVariable_Container
+//	void* raw_pointer;
+//	std::string err;
+//	//determine data type
+//	switch( TYPEOF(r_data) ){
+//	case INTSXP:
+//		if (var.get_data_type().get_data_type() != CPar_Data_Type::T_INT){
+//			//abort. Bad data type
+//			err = name + ": wrong data type (tried to load INT)";
+//			throw std::runtime_error(err);
+//		}
+//		raw_pointer = (void*) INTEGER(r_data);
+//		break;
+//	case REALSXP:
+//		if (var.get_data_type().get_data_type() != CPar_Data_Type::T_DOUBLE){
+//			err = name + ": wrong data type (tried to load DOUBLE)";
+//			throw std::runtime_error(err);
+//		}
+//		raw_pointer = (void *) REAL(r_data);
+//		break;
+//	default:
+//		throw std::runtime_error("Not implemented data type reader");
+//		break;
+//	}
+//	//Determine dimensions.
+//	int size_elems = Rf_length(r_data);
+//	SEXP r_dims = getAttrib(r_data, R_DimSymbol);
+//	int n_dims = Rf_length(r_dims);
+//	std::vector<int> v(n_dims);
+//	if(n_dims == 0) {
+//		n_dims = 1;
+//		v.push_back(size_elems);
+//	} else {
+//		int* lengths = INTEGER(r_dims);
+//		std::copy(lengths, lengths + n_dims, v.begin());
+//	}
+//
+//	//allocate and copy data.
+//	//WE TRANSPOSE IT WHILE COPYING!
+//	var.allocate_space(v);
+//	std::reverse(v.begin(), v.end());
+//	dan_transpose_untyped(raw_pointer, var.get_data_base(), 
+//		var.get_dims(), &v.front(), 
+//		var.get_size_dataelem()
+//	);
+//}
 
-	try{
-		var->allocate_space(v);
-	} catch (const std::exception& e){
-		err = "Cannot allocate space for " + name + ". Object destroyed.";
-		delete var;
-		throw std::runtime_error(err);
-	}
-	std::reverse(v.begin(), v.end());
-	dan_transpose_untyped(raw_pointer, var->get_data_base(), 
-		var->get_dims(), &v.front(), 
-		var->get_size_dataelem()
-	);
-	return var;
-}
+//void R_Load_CParams_generic(SEXP list, CParams_generic& par){
+//	if ( TYPEOF(list) != VECSXP ){
+//		throw std::runtime_error("Bad R data type (should be list)");
+//	}
+//	int n_variables = Rf_length(list); //get list length
+//	SEXP names = getAttrib(list, R_NamesSymbol); 
+//	for (int i = 0; i < n_variables; i++){
+//		SEXP r_name = STRING_ELT(names, i);
+//		const char* name = CHAR(r_name);
+//		if (Rf_StringBlank(r_name)){
+//			throw std::runtime_error("Not named element in list");
+//		}
+//		SEXP data_object = VECTOR_ELT(list, i);
+//		//throws an exception if error.
+//		CVariable_Container* var = R_Array2CVariable_Container(data_object, name);
+//		par.add(*var);
+//	}
+//}
 
-void R_Allocate_And_Load_CVariable (SEXP r_data, CVariable_Container& var, const std::string& name){
-	//reads INTSXP and REALSXPs into CVariable_Container
-	void* raw_pointer;
-	std::string err;
-	//determine data type
-	switch( TYPEOF(r_data) ){
-	case INTSXP:
-		if (var.get_data_type().get_data_type() != CPar_Data_Type::T_INT){
-			//abort. Bad data type
-			err = name + ": wrong data type (tried to load INT)";
-			throw std::runtime_error(err);
-		}
-		raw_pointer = (void*) INTEGER(r_data);
-		break;
-	case REALSXP:
-		if (var.get_data_type().get_data_type() != CPar_Data_Type::T_DOUBLE){
-			err = name + ": wrong data type (tried to load DOUBLE)";
-			throw std::runtime_error(err);
-		}
-		raw_pointer = (void *) REAL(r_data);
-		break;
-	default:
-		throw std::runtime_error("Not implemented data type reader");
-		break;
-	}
-	//Determine dimensions.
-	int size_elems = Rf_length(r_data);
-	SEXP r_dims = getAttrib(r_data, R_DimSymbol);
-	int n_dims = Rf_length(r_dims);
-	std::vector<int> v(n_dims);
-	if(n_dims == 0) {
-		n_dims = 1;
-		v.push_back(size_elems);
-	} else {
-		int* lengths = INTEGER(r_dims);
-		std::copy(lengths, lengths + n_dims, v.begin());
-	}
-
-	//allocate and copy data.
-	//WE TRANSPOSE IT WHILE COPYING!
-	var.allocate_space(v);
-	std::reverse(v.begin(), v.end());
-	dan_transpose_untyped(raw_pointer, var.get_data_base(), 
-		var.get_dims(), &v.front(), 
-		var.get_size_dataelem()
-	);
-}
-
-void R_Load_CParams_generic(SEXP list, CParams_generic& par){
-	if ( TYPEOF(list) != VECSXP ){
-		throw std::runtime_error("Bad R data type (should be list)");
-	}
-	int n_variables = Rf_length(list); //get list length
-	SEXP names = getAttrib(list, R_NamesSymbol); 
-	for (int i = 0; i < n_variables; i++){
-		SEXP r_name = STRING_ELT(names, i);
-		const char* name = CHAR(r_name);
-		if (Rf_StringBlank(r_name)){
-			throw std::runtime_error("Not named element in list");
-		}
-		SEXP data_object = VECTOR_ELT(list, i);
-		//throws an exception if error.
-		CVariable_Container* var = R_Array2CVariable_Container(data_object, name);
-		par.add(*var);
-	}
-}
-
-void R_Load_CData(CData& d, SEXP data_list){
-	int n_variables = Rf_length(data_list); //get list length
-	// - Obtain list of names (R - vector of strings: STRING_ELT)
-	SEXP names = getAttrib(data_list, R_NamesSymbol); 
-	//Read a list
-	for (int i = 0; i < n_variables; i++){
-		const char* name = CHAR(STRING_ELT(names, i));
-		SEXP data_object = VECTOR_ELT(data_list, i);
-		if ( !d.get_data_container().check_key(name) ) break;
-		//Load the data
-		R_Allocate_And_Load_CVariable(data_object, d[name], name);
-		d._Mark_Var_As_Read(name); //<-important. Keeps the status of the CData object consistent.
-	}
-	if ( !d.is_loaded() ){
-		throw std::runtime_error("Unfinished loading in CData object. Object might be inconsistent.");
-	}
-}
+//void R_Load_CData(CData& d, SEXP data_list){
+//	int n_variables = Rf_length(data_list); //get list length
+//	// - Obtain list of names (R - vector of strings: STRING_ELT)
+//	SEXP names = getAttrib(data_list, R_NamesSymbol); 
+//	//Read a list
+//	for (int i = 0; i < n_variables; i++){
+//		const char* name = CHAR(STRING_ELT(names, i));
+//		SEXP data_object = VECTOR_ELT(data_list, i);
+//		if ( !d.get_data_container().check_key(name) ) break;
+//		//Load the data
+//		R_Allocate_And_Load_CVariable(data_object, d[name], name);
+//		d._Mark_Var_As_Read(name); //<-important. Keeps the status of the CData object consistent.
+//	}
+//	if ( !d.is_loaded() ){
+//		throw std::runtime_error("Unfinished loading in CData object. Object might be inconsistent.");
+//	}
+//}
 

@@ -52,7 +52,7 @@ Invoking this function deletes the content of the object's tracing buffer.
 data(kosovo_aggregate)
 sampler <- lcmCR(captures = kosovo_aggregate, tabular = FALSE, in_list_label = '1',
       not_in_list_label = '0', K = 10, a_alpha = 0.25, b_alpha = 0.25, seed = 'auto')
-N <- lcmCR_PostSampl(sampler, burnin = 10000, samples = 1000, thinning = 100)
+N <- lcmCR_PostSampl(sampler, burnin = 10000, samples = 1000, thinning = 100, output = FALSE)
 quantile(N, c(0.025, 0.5, 0.975))
 }
 

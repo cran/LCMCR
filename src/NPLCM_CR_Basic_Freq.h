@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,10 +29,11 @@
 class CParams_NPLCM_CR_Basic_Freq : public CParam {
 public:
 	//parameters
-	int J, K, L, n, M; //C=levels of covariate (number of strata)
+	int J, K, n, M; //C=levels of covariate (number of strata)
 	//int *zI; //(z_i = k) i=1.. n
 	int **count_zIK;
-	double **lambdaJK; //(psi_{jkl}) l -> # of levels
+	//double **lambdaJK; //(psi_{jkl}) l -> # of levels
+	double ***log_lambdaJK2; //(psi_{jkl}) l -> # of levels
 	double *nuK, *log_nuK;
 	int *countK;
 	int *count0K;  //for unobserved individuals
@@ -60,8 +61,13 @@ public:
 		:	J(orig.J), K(orig.K), n(orig.n), M(orig.M), a_alpha(orig.a_alpha), b_alpha(orig.b_alpha){
 		class_construct();
 		//*this = orig; //copy the container. 
-		this->storage = orig.storage;
+		this->storage = orig.storage; 
 	}
+	CParams_NPLCM_CR_Basic_Freq& operator=(CParams_NPLCM_CR_Basic_Freq& orig){
+		CParam::operator=(orig);
+		return(*this);
+	}
+
 	void initizalize(gsl_rng *r); //Initialize the parameters
 private:
 	void class_construct();
@@ -77,7 +83,8 @@ public:
 	}
 	CNPLCM_CR_Basic_Freq(CData_DM* _data, int _K, double _a_alpha, double _b_alpha) 
 			:	CChain(), data(_data){
-		register_param(par = new CParams_NPLCM_CR_Basic_Freq(data->J, K, data->n, data->ncells, _a_alpha, _b_alpha));
+		
+				register_param(par = new CParams_NPLCM_CR_Basic_Freq(data->J, _K, data->n, data->ncells, _a_alpha, _b_alpha));
 		class_construct(data, par);
 	}
 	void Update();
@@ -98,13 +105,13 @@ protected:
 	//  all these functions update the values on the *par object.
 	void sam_nu();
 	void sam_lambda();
-	//void sam_z();
 	void sam_countzIK();
 	void sam_alpha();
-	//void sam_cov();
+	
 	//augmented sample:
-	void sam_z0x0();
 	void sam_n0();
+	void sam_z0x0();
+
 	//auxiliary functions
 	void permute_latent_classes_by_nu();
 	void compute_probs_miss();

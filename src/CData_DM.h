@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#if !defined(_CDATA_DM_H)
+#ifndef _CDATA_DM_H
 #define _CDATA_DM_H
 
 #include "daniel2/CData.h"
 #include "daniel2/CPar_Data_Type.h"
 //#include <iostream>
+
 class CData_DM : public CData{
 public:
 	CData_DM(){
@@ -66,7 +67,7 @@ public:
 		typedef std::map<std::vector<int>, int> tabla;
 		tabla s;
 		//tabulate the data (cells in tabla.first, counts in tabla.second)
-		for (int i = 0; i < n; i++){// int* it = x[0]; it != x[0] + n * J; it += J){
+		for (int i = 0; i < n; i++){
 			++s[std::vector<int>(x[i], x[i] + J)];
 		}
 		ncells = s.size();

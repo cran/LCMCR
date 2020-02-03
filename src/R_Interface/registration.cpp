@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2016 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2019 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <R.h>
-#include <Rinternals.h>
-#include <stdlib.h> // for NULL
-#include <R_ext/Rdynload.h>
+#include "registration.h"
 #include "R_Lcm_CR.h"
+#include "R_Lcm_CR_Strat.h"
 #include "daniel2/R_Environ_Simple.h"
+
 
 /* FIXME: 
    Check these declarations against the C/Fortran source code.
@@ -35,6 +34,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"R_Change_SubSamp",             (DL_FUNC) &R_Change_SubSamp,             2},
     {"R_Change_Trace_Size",          (DL_FUNC) &R_Change_Trace_Size,          2},
     {"R_Create_LCM_CR_Basic",        (DL_FUNC) &R_Create_LCM_CR_Basic,        8},
+    {"R_Create_LCM_CR_Strat",        (DL_FUNC) &R_Create_LCM_CR_Strat,        14},
     {"R_Deactivate_Chain_Messages",  (DL_FUNC) &R_Deactivate_Chain_Messages,  1},
     {"R_Deactivate_Tracing",         (DL_FUNC) &R_Deactivate_Tracing,         1},
     {"R_Deactivate_Updating_Output", (DL_FUNC) &R_Deactivate_Updating_Output, 1},
@@ -53,6 +53,7 @@ static const R_CallMethodDef CallEntries[] = {
     {NULL, NULL, 0}
 };
 
+extern"C"
 void R_init_LCMCR(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);

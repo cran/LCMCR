@@ -16,18 +16,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef DEFINITIONS_H
-#define	DEFINITIONS_H
+#ifndef _REGISTRATION_H
+#define _REGISTRATION_H
+#include <R.h>
+#include <Rinternals.h>
+#include <stdlib.h> /* for NULL */
+#include <R_ext/Rdynload.h>
 
-/*Global definitions*/
-#define GLOBAL_MAX_K 200 /*maximum K assumed for static allocations.*/
-#define GLOBAL_MAX_EXP 70 /*maximum value for the argument of exp()*/
-
-#ifdef _WIN32
-#include <direct.h>
-#define mkdir(x,y) _mkdir(x)
-#else
-#include <sys/stat.h>
-#endif
+extern"C"{
+  void R_init_LCMCR(DllInfo *dll);
+}
 
 #endif
