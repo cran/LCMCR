@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include "CPar_Data_Type.h"
-//#include "daniel2/dan_sys.h"
+#include "dan_sys.h"
 
 class CVariable_Container{
 public:
@@ -127,18 +127,21 @@ public:
 		return ( (reinterpret_cast<_T*>(data_base))[(((i * dim_lengths[1] + j)*dim_lengths[2] + k)*dim_lengths[3] + l)*dim_lengths[4] + m] );
 	}
 	////debugging methods
-	//void dump_content(){
-	//	for (int i = 0; i < this->size_elems; i++){
-	//		switch(data_type.get_data_type()){
-	//		case CPar_Data_Type::T_DOUBLE:
-	//			DAN_PRINTF("%.3f ", ((double*)this->data_base)[i]);
-	//			break;
-	//		case CPar_Data_Type::T_INT:
-	//			DAN_PRINTF("%d ", ((int*)this->data_base)[i]);
-	//			break;
-	//		}
-	//	}
-	//}
+	void dump_content(){
+		for (int i = 0; i < this->size_elems; i++){
+			switch(data_type.get_data_type()){
+			case CPar_Data_Type::T_DOUBLE:
+				DAN_PRINTF("%.3f ", ((double*)this->data_base)[i]);
+				break;
+			case CPar_Data_Type::T_INT:
+				DAN_PRINTF("%d ", ((int*)this->data_base)[i]);
+				break;
+			default:
+				DAN_PRINTF("NOT IMPLEMENTED");
+				break;
+			}
+		}
+	}
 private:
 	//properties
 	state_t			state; //state of the object.

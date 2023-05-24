@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,7 +149,6 @@ void CNPLCM_CR_Basic_Freq::sam_countzIK(){
 		if (data->freqM[m] > 1){
 			gsl_ran_multinomial(r, par->K, data->freqM[m], &(probs[0]), (unsigned int*)(par->count_zIK[m]));
 		} else {
-			//assert(data->freqM[m] ==1);
 			if (data->freqM[m] < 1) 
 				DAN_ERR_EXIT("freqM[m] < 1");
 			int z = dan_multinomial_1(r, par->K, &(probs[0]), false);

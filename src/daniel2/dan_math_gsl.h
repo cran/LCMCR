@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -251,6 +251,16 @@ void dan_neg_multinomial(const gsl_rng* r, const int &k, const int &size, const 
 		ns[i] = gsl_ran_poisson(r, gamma * p[i]/(1.0-norm));
 	}
 	return;
+}
+inline
+int dan_neg_binomial_p0(const gsl_rng* r, const int &size, const double p0){
+	// Number of failures before (size) successes
+	// Sece
+	//p: probability of success
+
+	double gamma = gsl_ran_gamma(r, double(size), 1.0);
+	double f = exp(log(p0)- log1p(-p0));
+	return gsl_ran_poisson(r, gamma * f);
 }
 inline
 double dan_lTruncWeibull(const gsl_rng* r, const double &alpha, const double &beta, const double &l_trn){

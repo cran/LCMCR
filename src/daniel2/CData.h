@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,21 +32,29 @@
 #include "CVariable_Container.h"
 
 class CData {
-	//1) Implement a *PRIVATE* method "Declare" that uses the method _Declare_Variable to
-	//		add the variables to the container, but doesn't allocate them. Important: this function is to be called from the constructor,
-	//		so keep it private so that derived classes use their own implementation!
-	//1.1) The method "Declare" should only initialize the variables corresponding to the class. If the class is derived from other CData child, 
-	//		the parent's declaration will be called from its own constructor.
-	//2) Call this method from the *CHILD* class' constructor. 
-	//3) Implement a (virtual) function Close_Loading() that calls (PARENT)::Close_Loading() and register all the pointers 
-	//		that expose data in the child CData object, computes all the necessary statistics, and load
-	//		any other needed variable (e.g. dimensions of the arrays). To get the pointers, use "_get_pointer".
-	//4) _Mark_Var_As_Read(key) automatically calls Close_Loading() when the last variable has loaded.
-	//5) Create a method called "SetManually( ...pars with data... )" that uses _Load_Variable(...) 
-	//		to allocate and fill the variables. 
-	//6) At any moment the vector "vars_to_read" (readable through _need_to_load()) indicates which variables
-	//		have to be loaded before closing the object for reading. _Load_Variable(..) keeps this updated
-	//		automatically. If you use other method, this has to be updated manually with a call to _Mark_Var_As_Read(key).
+	// 1) Implement a *PRIVATE* method "Declare" that uses the method 
+	// 		_Declare_Variable to add the variables to the container, but doesn't 
+	// 		allocate them. Important: this function is to be called from the 
+	// 		constructor, so keep it private so that derived classes use their own 
+	// 		implementation!
+	// 1.1) The method "Declare" should only initialize the variables 
+	// 		corresponding to the class. If the class is derived from other CData
+	// 		child, the parent's declaration will be called from its own constructor.
+	// 2) Call this method from the *CHILD* class' constructor. 
+	// 3) Implement a (virtual) function Close_Loading() that calls 
+	// 		(PARENT)::Close_Loading() and register all the pointers that expose
+	// 		data in the child CData object, computes all the necessary 
+	// 		statistics, and load any other needed variable (e.g. dimensions
+	// 		of the arrays). To get the pointers, use "_get_pointer".
+	// 4) _Mark_Var_As_Read(key) automatically calls Close_Loading() when the
+	// 		last variable has loaded.
+	// 5) Create a method called "SetManually( ...pars with data... )" that 
+	// 		uses _Load_Variable(...) to allocate and fill the variables. 
+	// 6) At any moment the vector "vars_to_read" (readable through 
+	// 		_need_to_load()) indicates which variables have to be loaded before
+	// 		closing the object for reading. _Load_Variable(..) keeps this 
+	// 		updated automatically. If you use other method, this has to be 
+	// 		updated manually with a call to _Mark_Var_As_Read(key).
 
 
 public:

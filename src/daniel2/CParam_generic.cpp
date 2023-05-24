@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ void* CParams_generic::add(const std::string &key, CPar_Data_Type::data_type_t t
 		std::string m = "Can't create parameter object \"" + key + "\"";
 		throw std::runtime_error(m);
 	}
+	#pragma omp critical
 	dict[key] = descr;
 	return descr->get_data();
 }

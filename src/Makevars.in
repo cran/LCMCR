@@ -1,0 +1,26 @@
+RAIZ = ./
+AUX_SRC_LIB = daniel2/
+R_INTERF = R_Interface/
+R_INCLUDES = $(WIN_FLAGS)
+
+#
+# In non-windows systems we rely on the configuration script
+GSL_CFLAGS = @GSL_CFLAGS@
+GSL_LIBS   = @GSL_LIBS@
+INLINE     = @INL@
+
+
+PKG_LIBS     = $(GSL_LIBS)
+PKG_CXXFLAGS = $(GSL_CFLAGS) -I./ -I../ -DUSING_R -I$(CODE) $(INLINE) -DNDEBUG -DR_NO_REMAP 
+
+SUP_OBJ = $(AUX_SRC_LIB)R_Environ_Simple.o $(AUX_SRC_LIB)CChain.o \
+	$(AUX_SRC_LIB)CParam.o $(AUX_SRC_LIB)CData.o $(AUX_SRC_LIB)CParam_generic.o \
+	$(AUX_SRC_LIB)CVariable_Container.o $(AUX_SRC_LIB)dan_array_utils.o
+	
+INTERF_OBJ = $(R_INTERF)R_Lcm_CR.o 
+
+ACTUAL_OBJ = $(RAIZ)NPLCM_CR_Basic_Freq.o 
+
+OBJECTS = $(R_INTERF)registration.o $(INTERF_OBJ) $(ACTUAL_OBJ) $(SUP_OBJ)
+
+all: $(SHLIB)

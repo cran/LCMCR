@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ SEXP R_Get_Probabilities_LCM_CR_Basic(SEXP p){
    LNPLCM_CR_Basic_env* m = (LNPLCM_CR_Basic_env*)get_env(p);
    //reserve a real vector of size n.
    int n = m->get_data().n;
-   PROTECT(x = allocVector(REALSXP, n));
+   PROTECT(x = Rf_allocVector(REALSXP, n));
    m->get_model().Get_Probs_Observed_Data(REAL(x));
    UNPROTECT(1);
    return(x);

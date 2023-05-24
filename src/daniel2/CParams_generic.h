@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,8 +69,35 @@ public:
 		(*this) = orig; //use the asignment operator.
 	}
 	//functions for managing the collection
-	void* add(const std::string &key, CPar_Data_Type::data_type_t type, const std::vector<int>& lengths);
-	void* add(const std::string &key, CPar_Data_Type::data_type_t type, int dims, ...);
+	void* add(const std::string& key, CPar_Data_Type::data_type_t type,
+				const std::vector<int>& lengths);
+	void* add_static(const std::string& key,
+						CPar_Data_Type::data_type_t type,
+						const std::vector<int>& lengths) {
+							//If key exists, just return a pointer to that data
+		void* ptr = NULL;
+		if (this->check_key(key)) {
+			ptr = this->get_dataObject(key).get_data();
+		} else {
+			ptr = this->add(key, type, lengths);
+		}
+		return(ptr);
+	}
+	void* add(const std::string& key, CPar_Data_Type::data_type_t type,
+				int dims, ...);
+	void* add_static(const std::string& key,
+						CPar_Data_Type::data_type_t type, int dims, ...) {
+							//If key exists, just return a pointer to that data
+		std::vector<int> lengths(dims);
+		std::va_list args;
+		va_start(args, dims);
+		for (int i = 0; i < dims; i++) {
+		lengths[i] = va_arg(args, int);
+		}
+		va_end(args);
+		return add_static(key, type, lengths);
+	}
+
 	void* add(CPar_defs& Existing_Variable);
 	void* add_existing_scalar(const std::string &key, CPar_Data_Type::data_type_t type, void* var);
 	void erase_variable(const std::string& key){

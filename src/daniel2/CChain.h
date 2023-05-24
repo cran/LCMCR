@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,10 +51,10 @@ public:
 	virtual ~CChain(){};
 	void setModelSignature(const std::string &signature);
 	const std::string& getModelSignature();
-	virtual void Initializes();
-	virtual void Update();
+	virtual void Initializes() = 0;
+	virtual void Update()=0;
 	double get_lap_time(){ return(lap_time);}
-	void reseed_rng(const unsigned int new_seed){ gsl_rng_set(r, new_seed); }
+	virtual void reseed_rng(const unsigned int new_seed){ gsl_rng_set(r, new_seed); }
 	void messages_off(){ verbose = false;}
 	void messages_on(){ verbose = true;}
 	gsl_rng *r;
@@ -68,6 +68,23 @@ protected:
 	int current_iteration;
 	bool verbose; //Write messages to the console?
 	CParams_generic local_vars;//Local allocation ***THE STATE OF THE CHAIN MUS NOT DEPEND OF THESE VALUES***
+	void* add_static(const std::string& key,
+						CPar_Data_Type::data_type_t type,
+						const std::vector<int>& lengths) {
+		return(local_vars.add_static(key, type, lengths));
+	}
+	void* add_static(const std::string& key,
+						CPar_Data_Type::data_type_t type, int dims, ...) {
+							//If key exists, just return a pointer to that data
+		std::vector<int> lengths(dims);
+		std::va_list args;
+		va_start(args, dims);
+		for (int i = 0; i < dims; i++) {
+		lengths[i] = va_arg(args, int);
+		}
+		va_end(args);
+		return local_vars.add_static(key, type, lengths);
+	}
 private:
 	std::string model_signature; //MUST BE INTIALIZED IN CHILD CLASS.
 	long start_time;

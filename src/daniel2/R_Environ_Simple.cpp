@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2007-2019 Daniel Manrique-Vallier
+ * Copyright (C) 2007-2023 Daniel Manrique-Vallier
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "dan_array_utils.h"
 #include <map>
 #include <vector>
+
+
 
 ///////////------------------------------------------------
 ///////	All these functions will work for any object derived from
@@ -102,7 +104,7 @@ SEXP R_Update_Model(SEXP p, SEXP int_iter){
 SEXP R_Get_Iteration(SEXP p){
 	CModel_Environ_Simple_base* m = get_env(p);
 	SEXP iter;
-	PROTECT(iter = allocVector(INTSXP,1));
+	PROTECT(iter = Rf_allocVector(INTSXP,1));
 	*INTEGER(iter) = m->get_iteration();
 	UNPROTECT(1);
 	return(iter);
@@ -114,7 +116,7 @@ SEXP R_Get_Status(SEXP p){
 	//Returns a vector c(<iteration>, <initialized>, <buffer size>, <buffer used>, <tracer activated>, <thinning>) 
 	CModel_Environ_Simple_base* m = get_env(p);
 	SEXP status;
-	PROTECT(status = allocVector(INTSXP,6));
+	PROTECT(status = Rf_allocVector(INTSXP,6));
 	INTEGER(status)[0] = m->get_iteration();
 	INTEGER(status)[1] = (m->get_model_state() == CModel_Environ_Simple_base::MODEL_INITIALIZED ||  m->get_model_state() == CModel_Environ_Simple_base::UPDATING) ? 1 : 0;
 	INTEGER(status)[2] = m->Tracer().get_capacity();
@@ -173,11 +175,11 @@ SEXP R_Get_Trace(SEXP p, SEXP trace){
 	CPar_Data_Type& type = m->Tracer().get_data_type(key);
 	switch (type.get_data_type()){
 		case CPar_Data_Type::T_DOUBLE: 
-			PROTECT(r = allocVector(REALSXP, nelems));
+			PROTECT(r = Rf_allocVector(REALSXP, nelems));
 			m->Tracer().Copy_trace(key, REAL(r));
 			break;
 		case CPar_Data_Type::T_INT:
-			PROTECT(r = allocVector(INTSXP, nelems));
+			PROTECT(r = Rf_allocVector(INTSXP, nelems));
 			m->Tracer().Copy_trace(key, INTEGER(r));
 			break;
 		default:
@@ -187,12 +189,12 @@ SEXP R_Get_Trace(SEXP p, SEXP trace){
 	}
 	// Note that the vector is in rightmost-varying-fastest. We set the "dim"
 	// vector in reverse order and use "aperm(x, ndims:1)"
-	PROTECT(ret_int_dims = allocVector(INTSXP, ndims));
+	PROTECT(ret_int_dims = Rf_allocVector(INTSXP, ndims));
 	for (int i = 1; i < ndims; i++){
 		INTEGER(ret_int_dims)[ndims - i -1] = dims[i];
 	}
 	INTEGER(ret_int_dims)[ndims - 1] = m->Tracer().get_size();//->get_traces_current_size();
-	setAttrib(r, install("dim"), ret_int_dims);
+	Rf_setAttrib(r, Rf_install("dim"), ret_int_dims);
 	UNPROTECT(2);
 	return(r);
 }
@@ -208,89 +210,89 @@ SEXP R_Get_Param(SEXP p, SEXP key_){
 	int ndims = dims.size();
 	switch (par.get_data_type().get_data_type()){ 
 		case CPar_Data_Type::T_DOUBLE:
-			PROTECT(r = allocVector(REALSXP, par.get_size_elems()));
+			PROTECT(r = Rf_allocVector(REALSXP, par.get_size_elems()));
 			par.copy_raw_data(REAL(r));
 			break;
 		case CPar_Data_Type::T_INT:
-			PROTECT(r = allocVector(INTSXP, par.get_size_elems()));
+			PROTECT(r = Rf_allocVector(INTSXP, par.get_size_elems()));
 			par.copy_raw_data(INTEGER(r));
 			break;
 		default:
 			DAN_ERR_NOABORT("Can't get variable. Not implemented data type. \n");
 			return(R_NilValue);
 	}
-	PROTECT(ret_int_dims = allocVector(INTSXP, ndims));
+	PROTECT(ret_int_dims = Rf_allocVector(INTSXP, ndims));
 	for (int i = 0; i < ndims; i++){
 		INTEGER(ret_int_dims)[ndims - i - 1] = dims[i];
 	}
-	setAttrib(r, install("dim"), ret_int_dims);
+	Rf_setAttrib(r, Rf_install("dim"), ret_int_dims);
 	UNPROTECT(2);
 	return(r);
 }
 
  
 //<<--- TEST THIS FUNCTION.
-SEXP R_Set_Param(SEXP p, SEXP param_name, SEXP r_data){
-	//Copy provided data r_data to parameter "param_name". Verifies
-	// data type and dimensions.
-	CModel_Environ_Simple_base* m = get_env(p);
-	//SEXP ret_int_dims = R_NilValue; //int. Dimensions of the array
-	//Get and verify parameter container.
-	char* key = const_cast<char*>(CHAR(STRING_ELT(param_name,0)));
-	if(!m->check_param_key(key)){
-		DAN_ERR_EXIT("No such parameter (%s)\n", key);
-	}
-	CPar_defs& par = m->get_param_container(key);
-	//get and verify input data type
-	CPar_Data_Type::data_type_t type;
-	void* raw_pointer;
-	std::string err;
-	switch( TYPEOF(r_data) ){
-	case INTSXP:
-		type = CPar_Data_Type::T_INT;
-		raw_pointer = (void*) INTEGER(r_data);
-		break;
-	case REALSXP:
-		type = CPar_Data_Type::T_DOUBLE;
-		raw_pointer = (void *) REAL(r_data);
-		break;
-	default:
-		err = "Not implemented data type reader for " + par.get_name();
-		//throw std::runtime_error(err);
-		DAN_ERR_EXIT("%s\n", err.c_str());
-		break;
-	}
-	if (type != par.get_data_type().get_data_type()){
-		DAN_ERR_EXIT("Incorrect data type for parameter %s (should be %s)\n", 
-			par.get_name().c_str(),
-			par.get_data_type().get_type_name().c_str()
-		);
-	}
-	//Get and verify dimensions
-	int size_elems = Rf_length(r_data);
-	SEXP r_dims = getAttrib(r_data, R_DimSymbol);
-	int n_r_dims = Rf_length(r_dims);
-	n_r_dims = n_r_dims == 0 ? 1 : n_r_dims; //in case the input is just a vector ("0" dims)
-	int n_c_dims = par.get_dims();
-	std::vector<int> dims(n_r_dims);
-	std::copy_backward(INTEGER(r_dims), INTEGER(r_dims) + n_r_dims, dims.begin());
-	if (n_r_dims != n_c_dims){
-		DAN_ERR_EXIT("Incorrect number of dimensions (provided %d; should be %d)\n", n_r_dims, n_c_dims);
-	}
-	if (n_r_dims > 1 && !std::equal(dims.begin(), dims.end(), par.get_dim_lengths().begin())){
-		DAN_ERR_EXIT("Dimensions don't match.\n");
-	}
-	if (size_elems != par.get_size_elems()){
-		//Last verification: the number of elements (and bytes!) has to be the same.
-		DAN_ERR_EXIT("Incorrect number of elements (provided %d; should be %d).\n", size_elems, par.get_size_elems());
-	}
-	//copy data. Transposition between R and C here.
-	dan_transpose_untyped(raw_pointer, par.get_data_base(), 
-		par.get_dims(), &dims.front(), 
-		par.get_size_dataelem()
-	);
-	return(R_NilValue);
-}
+//SEXP R_Set_Param(SEXP p, SEXP param_name, SEXP r_data){
+//	//Copy provided data r_data to parameter "param_name". Verifies
+//	// data type and dimensions.
+//	CModel_Environ_Simple_base* m = get_env(p);
+//	//SEXP ret_int_dims = R_NilValue; //int. Dimensions of the array
+//	//Get and verify parameter container.
+//	char* key = const_cast<char*>(CHAR(STRING_ELT(param_name,0)));
+//	if(!m->check_param_key(key)){
+//		DAN_ERR_EXIT("No such parameter (%s)\n", key);
+//	}
+//	CPar_defs& par = m->get_param_container(key);
+//	//get and verify input data type
+//	CPar_Data_Type::data_type_t type;
+//	void* raw_pointer;
+//	std::string err;
+//	switch( TYPEOF(r_data) ){
+//	case INTSXP:
+//		type = CPar_Data_Type::T_INT;
+//		raw_pointer = (void*) INTEGER(r_data);
+//		break;
+//	case REALSXP:
+//		type = CPar_Data_Type::T_DOUBLE;
+//		raw_pointer = (void *) REAL(r_data);
+//		break;
+//	default:
+//		err = "Not implemented data type reader for " + par.get_name();
+//		//throw std::runtime_error(err);
+//		DAN_ERR_EXIT("%s\n", err.c_str());
+//		break;
+//	}
+//	if (type != par.get_data_type().get_data_type()){
+//		DAN_ERR_EXIT("Incorrect data type for parameter %s (should be %s)\n", 
+//			par.get_name().c_str(),
+//			par.get_data_type().get_type_name().c_str()
+//		);
+//	}
+//	//Get and verify dimensions
+//	int size_elems = Rf_length(r_data);
+//	SEXP r_dims = Rf_getAttrib(r_data, R_DimSymbol);
+//	int n_r_dims = Rf_length(r_dims);
+//	n_r_dims = n_r_dims == 0 ? 1 : n_r_dims; //in case the input is just a vector ("0" dims)
+//	int n_c_dims = par.get_dims();
+//	std::vector<int> dims(n_r_dims);
+//	std::copy_backward(INTEGER(r_dims), INTEGER(r_dims) + n_r_dims, dims.begin());
+//	if (n_r_dims != n_c_dims){
+//		DAN_ERR_EXIT("Incorrect number of dimensions (provided %d; should be %d)\n", n_r_dims, n_c_dims);
+//	}
+//	if (n_r_dims > 1 && !std::equal(dims.begin(), dims.end(), par.get_dim_lengths().begin())){
+//		DAN_ERR_EXIT("Dimensions don't match.\n");
+//	}
+//	if (size_elems != par.get_size_elems()){
+//		//Last verification: the number of elements (and bytes!) has to be the same.
+//		DAN_ERR_EXIT("Incorrect number of elements (provided %d; should be %d).\n", size_elems, par.get_size_elems());
+//	}
+//	//copy data. Transposition between R and C here.
+//	dan_transpose_untyped(raw_pointer, par.get_data_base(), 
+//		par.get_dims(), &dims.front(), 
+//		par.get_size_dataelem()
+//	);
+//	return(R_NilValue);
+//}
 
 
 SEXP R_Get_Trace_List(SEXP p){
@@ -298,9 +300,9 @@ SEXP R_Get_Trace_List(SEXP p){
 	const std::vector<std::string> &t =  m->Tracer().get_trace_keys();//get_trace_keys();
 	int n = t.size();
 	SEXP names;
-	PROTECT(names = allocVector(STRSXP,n));
+	PROTECT(names = Rf_allocVector(STRSXP,n));
 	for(int i = 0; i < n; i++)   
-		SET_STRING_ELT(names, i, mkChar(t[i].c_str())); 
+		SET_STRING_ELT(names, i, Rf_mkChar(t[i].c_str())); 
 	UNPROTECT(1);
 	return(names);
 }
@@ -310,9 +312,9 @@ SEXP R_Get_Param_List(SEXP p){
 	const std::vector<std::string> &t =  m->get_param_keys();
 	int n = t.size();
 	SEXP names;
-	PROTECT(names = allocVector(STRSXP,n));
+	PROTECT(names = Rf_allocVector(STRSXP,n));
 	for(int i = 0; i < n; i++)   
-		SET_STRING_ELT(names, i, mkChar(t[i].c_str())); 
+		SET_STRING_ELT(names, i, Rf_mkChar(t[i].c_str())); 
 	UNPROTECT(1);
 	return(names);
 }
@@ -338,7 +340,7 @@ SEXP R_Deactivate_Tracing(SEXP p){
 SEXP R_Get_Trace_Size(SEXP p){
 	CModel_Environ_Simple_base* m = get_env(p);
 	SEXP r;
-	PROTECT(r = allocVector(INTSXP, 1));
+	PROTECT(r = Rf_allocVector(INTSXP, 1));
 	*INTEGER(r)= m->Tracer().get_size();//get_traces_current_size();
 	UNPROTECT(1);
 	return(r);
@@ -360,37 +362,37 @@ SEXP R_Change_SubSamp(SEXP p, SEXP subsam){
 	return(R_NilValue);
 }
 
-SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
-	int J = length(levelsJ);
-	int JN = length(dataIJ_flat);
-	//int N = JN / J;
-	int* data_flat = INTEGER(dataIJ_flat);
-	typedef std::map<std::vector<int>, int> tabla;
-	tabla s;
-	for (int* it = data_flat; it != data_flat + JN; it += J){
-		++s[std::vector<int>(it, it + J)];
-	}
-	//prepare the return list
-	int M = s.size();
-	SEXP ans, cells, Freq, dims;
-	PROTECT(cells = allocVector(INTSXP, J * M));
-	PROTECT(Freq = allocVector(INTSXP, M));
-	PROTECT(dims = allocVector(INTSXP, 2));
-	PROTECT(ans = allocVector(VECSXP, 2));
-	int m = 0;
-	int* cell = INTEGER(cells);
-	for (tabla::iterator it = s.begin(); it != s.end(); ++it, ++m, cell += J){
-		std::copy(&(it->first[0]), &(it->first[J]), cell);
-		INTEGER(Freq)[m] = it->second;
-	}
-	INTEGER(dims)[0] = J; //COL major order.
-	INTEGER(dims)[1] = M;
-	setAttrib(cells, install("dim"), dims);
-	SET_VECTOR_ELT(ans, 0, cells);
-	SET_VECTOR_ELT(ans, 1, Freq);
-	UNPROTECT(4);
-	return(ans);
-}
+//SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
+//	int J = Rf_length(levelsJ);
+//	int JN = Rf_length(dataIJ_flat);
+//	//int N = JN / J;
+//	int* data_flat = INTEGER(dataIJ_flat);
+//	typedef std::map<std::vector<int>, int> tabla;
+//	tabla s;
+//	for (int* it = data_flat; it != data_flat + JN; it += J){
+//		++s[std::vector<int>(it, it + J)];
+//	}
+//	//prepare the return list
+//	int M = s.size();
+//	SEXP ans, cells, Freq, dims;
+//	PROTECT(cells = Rf_allocVector(INTSXP, J * M));
+//	PROTECT(Freq = Rf_allocVector(INTSXP, M));
+//	PROTECT(dims = Rf_allocVector(INTSXP, 2));
+//	PROTECT(ans = Rf_allocVector(VECSXP, 2));
+//	int m = 0;
+//	int* cell = INTEGER(cells);
+//	for (tabla::iterator it = s.begin(); it != s.end(); ++it, ++m, cell += J){
+//		std::copy(&(it->first[0]), &(it->first[J]), cell);
+//		INTEGER(Freq)[m] = it->second;
+//	}
+//	INTEGER(dims)[0] = J; //COL major order.
+//	INTEGER(dims)[1] = M;
+//	Rf_setAttrib(cells, Rf_install("dim"), dims);
+//	SET_VECTOR_ELT(ans, 0, cells);
+//	SET_VECTOR_ELT(ans, 1, Freq);
+//	UNPROTECT(4);
+//	return(ans);
+//}
 
 
 //CVariable_Container* R_Array2CVariable_Container(SEXP r_data, const std::string& name){
@@ -415,7 +417,7 @@ SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
 //	}
 //	//Determine dimensions.
 //	int size_elems = Rf_length(r_data);
-//	SEXP r_dims = getAttrib(r_data, R_DimSymbol);
+//	SEXP r_dims = Rf_getAttrib(r_data, R_DimSymbol);
 //	int n_dims = Rf_length(r_dims);
 //	std::vector<int> v(n_dims);
 //	if(n_dims == 0) {
@@ -470,7 +472,7 @@ SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
 //	}
 //	//Determine dimensions.
 //	int size_elems = Rf_length(r_data);
-//	SEXP r_dims = getAttrib(r_data, R_DimSymbol);
+//	SEXP r_dims = Rf_getAttrib(r_data, R_DimSymbol);
 //	int n_dims = Rf_length(r_dims);
 //	std::vector<int> v(n_dims);
 //	if(n_dims == 0) {
@@ -496,7 +498,7 @@ SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
 //		throw std::runtime_error("Bad R data type (should be list)");
 //	}
 //	int n_variables = Rf_length(list); //get list length
-//	SEXP names = getAttrib(list, R_NamesSymbol); 
+//	SEXP names = Rf_getAttrib(list, R_NamesSymbol); 
 //	for (int i = 0; i < n_variables; i++){
 //		SEXP r_name = STRING_ELT(names, i);
 //		const char* name = CHAR(r_name);
@@ -513,7 +515,7 @@ SEXP R_Partial_Contingency_Table(SEXP dataIJ_flat, SEXP levelsJ){
 //void R_Load_CData(CData& d, SEXP data_list){
 //	int n_variables = Rf_length(data_list); //get list length
 //	// - Obtain list of names (R - vector of strings: STRING_ELT)
-//	SEXP names = getAttrib(data_list, R_NamesSymbol); 
+//	SEXP names = Rf_getAttrib(data_list, R_NamesSymbol); 
 //	//Read a list
 //	for (int i = 0; i < n_variables; i++){
 //		const char* name = CHAR(STRING_ELT(names, i));
