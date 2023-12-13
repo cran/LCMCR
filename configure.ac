@@ -1,4 +1,4 @@
-AC_INIT([LCMCR],[0.4.13],[dmanriqu@indiana.edu])
+AC_INIT([LCMCR],[0.4.14],[dmanriqu@indiana.edu])
 AC_CONFIG_MACRO_DIRS([.])
 AC_CONFIG_MACRO_DIRS([tools])
 AX_PATH_GSL([2.5],,

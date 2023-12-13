@@ -63,7 +63,7 @@ SEXP R_Create_LCM_CR_Basic(SEXP x_flat, SEXP J, SEXP n, SEXP K,
 			new PB(d, *INTEGER(K), *REAL(a_alpha), *REAL(b_alpha)), 
 			*INTEGER(len_buffer), *INTEGER(subsamp), true);	
 	} catch (const std::exception& e){
-		DAN_ERR_EXIT(e.what());
+		DAN_ERR_EXIT("%s", e.what());
 	}
 	SEXP ext = PROTECT(R_MakeExternalPtr((void*)e, R_NilValue, R_NilValue));
     R_RegisterCFinalizerEx(ext, finalizer_Env, TRUE);

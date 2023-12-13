@@ -82,7 +82,7 @@ SEXP R_Init_Model(SEXP p){
 		std::string s = "Model initialization failed (";
 		s += e.what();
 		s += ")";
-		DAN_ERR_NOABORT(s.c_str());
+		DAN_ERR_NOABORT("%s", s.c_str());
 		p = R_NilValue;
 	} 
 	return(p);
@@ -95,7 +95,7 @@ SEXP R_Update_Model(SEXP p, SEXP int_iter){
 		std::string s = "Updating error (";
 		s += e.what();
 		s += ")";
-		DAN_ERR_EXIT(s.c_str());
+		DAN_ERR_EXIT("%s", s.c_str());
 		p = R_NilValue;
 	}
 	return(p);
@@ -135,7 +135,7 @@ SEXP R_Set_Trace(SEXP p, SEXP trace_name){
 	try{
 		m->Tracer().set_trace(name);
 	} catch (const std::exception& e){
-		DAN_ERR_NOABORT(e.what());
+		DAN_ERR_NOABORT("%s", e.what());
 	}
 	return(p);
 }
@@ -351,7 +351,7 @@ SEXP R_Change_Trace_Size(SEXP p, SEXP siz){
 	try {
 		m->recreate_trace(*INTEGER(siz));
 	} catch (const std::exception& e){
-		DAN_ERR_NOABORT(e.what());
+		DAN_ERR_NOABORT("%s", e.what());
 	}
 	return(R_NilValue);
 }

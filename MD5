@@ -1,14 +1,14 @@
-2ac9bceb2da4f44c9f2b45765e2a65e2 *DESCRIPTION
+f942ea81f82bf10ece9cf849dfd0475c *DESCRIPTION
 ac2f70cb302dcd15e5b4c8de59cca153 *NAMESPACE
 b6ade64931744dc9cdc5819517be1c0e *R/ArrayUtils.R
 55e1c52c53a9683c154a054a561e6691 *R/CR_Support.R
 621b7643075a1f96209bcb08f59df9df *R/Lcm_CR_fn.R
 abed8b4cd8eacff4cec70ee83d72f44a *R/MCMCenv_refClass.R
 4011b871228b6c1c5feed452913bbdaa *cleanup
-7982ef26a0215f5336a0c18c130c5cb8 *configure
-98b883f8c586c01b9bed83e997fb0f62 *configure.ac
+ac2db116951c2136f435781acbf96f07 *configure
+b6fd6e1b951cde773448afc542e1b98f *configure.ac
 9713b3ce83b5a8857f4834f926a90be3 *data/kosovo_aggregate.RData
-076bc7fabf75ec7d0db4b7efa5ef9f19 *man/LCMCR-package.Rd
+1dd0fae1eab368804b65222a23f663fa *man/LCMCR-package.Rd
 2fdad0a9687708bcd3794a8cb6be52ff *man/MCMCenviron.Rd
 792b688f4b29b69772603376ddf654f1 *man/kosovo_aggregate.Rd
 805fa61630094855fd8734cf25d0a756 *man/lcmCR.Rd
@@ -20,7 +20,7 @@ abed8b4cd8eacff4cec70ee83d72f44a *R/MCMCenv_refClass.R
 f6a1998a5cf999ceda9280f7c092684c *src/Makevars.win
 44d21ff6c7a64f9bf6460643f39230ea *src/NPLCM_CR_Basic_Freq.cpp
 f2e4c651e0d720bb1888aeb8898a45f7 *src/NPLCM_CR_Basic_Freq.h
-cb0f179ebe2581d8b8f0aa9314162c20 *src/R_Interface/R_Lcm_CR.cpp
+7c87908c28c1caaf87adfac2d32488c1 *src/R_Interface/R_Lcm_CR.cpp
 68dd4a43aa36a20c01b2cdbe346e2d5e *src/R_Interface/R_Lcm_CR.h
 2af345629d27ee98361728ac8f480c7f *src/R_Interface/registration.cpp
 2de2fbbb1325500a540d9f45f0568228 *src/R_Interface/registration.h
@@ -36,7 +36,7 @@ e1e1cf6f66fb4b5ef459b397fbe6fa11 *src/daniel2/CParams_generic.h
 bf58befc0bbc3e5a655bd221d1d29917 *src/daniel2/CVariable_Container.cpp
 990ebf86721796ff04c79081feec1c0e *src/daniel2/CVariable_Container.h
 5cd881b27f67b7cdc213b5b13d7faa4e *src/daniel2/Model_Environ.h
-f48ccee6945e9effcedba9726142acda *src/daniel2/R_Environ_Simple.cpp
+4f4becdd6c81ed655a0cadf881420034 *src/daniel2/R_Environ_Simple.cpp
 8543d1463c32d25c0c3c91fec305d0ed *src/daniel2/R_Environ_Simple.h
 d1c8e821b957342f649d0c8a0cfdd16f *src/daniel2/dan_array_utils.cpp
 24391c85cb7606c7fdfce7dedc32cdcd *src/daniel2/dan_array_utils.h

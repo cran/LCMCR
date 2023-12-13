@@ -11,8 +11,8 @@ This package implements a fully Bayesian multiple-recapture method for estimatin
 \tabular{ll}{
 Package: \tab LCMCR\cr
 Type: \tab Package\cr
-Version: \tab 0.4.13 \cr
-Date: \tab 2023-05-23\cr
+Version: \tab 0.4.14\cr
+Date: \tab 2023-12-13\cr
 License: \tab GPL >= 2\cr
 }
  }
